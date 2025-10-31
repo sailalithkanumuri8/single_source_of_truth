@@ -64,7 +64,7 @@ const Header = ({ onSearch, searchTerm }) => {
             <div className="user-profile">
               <div className="user-avatar">ES</div>
               <div className="user-info">
-                <span className="user-name">Ethan & Sai</span>
+                <span className="user-name">Staff</span>
                 <span className="user-role">Support Engineer</span>
               </div>
             </div>

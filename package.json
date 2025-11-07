@@ -1,0 +1,18 @@
+{
+  "name": "single-source-of-truth-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for Single Source of Truth application",
+  "scripts": {
+    "install:all": "npm install --prefix frontend && npm install --prefix backend",
+    "start:frontend": "npm start --prefix frontend",
+    "start:backend": "npm start --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "test:frontend": "npm test --prefix frontend"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
+

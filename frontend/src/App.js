@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './App.css';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import EscalationList from './components/EscalationList';
 import EscalationDetail from './components/EscalationDetail';
 import Dashboard from './components/Dashboard';
-import { mockEscalations } from './data/mockEscalations';
+import { fetchEscalations } from './services/api';
 import { calculateStats } from './utils/helpers';
 
 function App() {
@@ -17,29 +17,43 @@ function App() {
     category: 'all'
   });
   const [selectedEscalation, setSelectedEscalation] = useState(null);
+  const [escalations, setEscalations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Calculate statistics for sidebar using helper
-  const escalationStats = useMemo(() => calculateStats(mockEscalations), []);
+  useEffect(() => {
+    const loadEscalations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchEscalations();
+        setEscalations(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Filter and search escalations
+    loadEscalations();
+  }, []);
+
+  const escalationStats = useMemo(() => calculateStats(escalations), [escalations]);
+
   const filteredEscalations = useMemo(() => {
-    return mockEscalations.filter(escalation => {
-      // Apply status filter
+    return escalations.filter(escalation => {
       if (filters.status !== 'all' && escalation.status !== filters.status) {
         return false;
       }
 
-      // Apply priority filter
       if (filters.priority !== 'all' && escalation.priority !== filters.priority) {
         return false;
       }
 
-      // Apply category filter
       if (filters.category !== 'all' && escalation.category !== filters.category) {
         return false;
       }
 
-      // Apply search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
@@ -53,7 +67,57 @@ function App() {
 
       return true;
     });
-  }, [filters, searchTerm]);
+  }, [escalations, filters, searchTerm]);
+
+  if (loading) {
+    return (
+      <div className="app">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <div style={{ fontSize: '1.5rem' }}>Loading escalations...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="app">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '1rem',
+          color: '#dc2626'
+        }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Error loading data</div>
+          <div>{error}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              padding: '0.5rem 1rem',
+              marginTop: '1rem',
+              cursor: 'pointer',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -70,7 +134,7 @@ function App() {
         
         <main className="main-content">
           {selectedView === 'dashboard' && (
-            <Dashboard escalations={mockEscalations} />
+            <Dashboard escalations={escalations} />
           )}
           
           {selectedView === 'escalations' && (
@@ -81,7 +145,7 @@ function App() {
           )}
           
           {selectedView === 'analytics' && (
-            <Dashboard escalations={mockEscalations} />
+            <Dashboard escalations={escalations} />
           )}
         </main>
       </div>

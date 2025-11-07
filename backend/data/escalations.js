@@ -1,5 +1,4 @@
-// Mock escalation data for the system
-export const mockEscalations = [
+const escalations = [
   {
     id: "ESC-2024-001",
     title: "Azure VM Performance Degradation",
@@ -470,41 +469,5 @@ export const mockEscalations = [
   }
 ];
 
-// Helper functions for filtering and searching
-export const getStatusColor = (status) => {
-  const colors = {
-    critical: '#dc2626',
-    high: '#ea580c',
-    medium: '#f59e0b',
-    low: '#10b981',
-    resolved: '#6b7280'
-  };
-  return colors[status] || colors.medium;
-};
-
-export const getPriorityColor = (priority) => {
-  const colors = {
-    P0: '#dc2626',
-    P1: '#ea580c',
-    P2: '#f59e0b',
-    P3: '#10b981',
-    P4: '#6b7280'
-  };
-  return colors[priority] || colors.P2;
-};
-
-export const categories = [
-  'All Categories',
-  'Infrastructure',
-  'Identity & Access',
-  'Data & Storage',
-  'DevOps',
-  'Networking',
-  'Containers',
-  'Analytics',
-  'Compute'
-];
-
-export const statuses = ['All Statuses', 'critical', 'high', 'medium', 'low', 'resolved'];
-export const priorities = ['All Priorities', 'P0', 'P1', 'P2', 'P3', 'P4'];
+module.exports = escalations;
 

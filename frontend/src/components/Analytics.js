@@ -230,58 +230,6 @@ const Analytics = ({ escalations }) => {
           </div>
         </div>
       </div>
-
-      {/* Insights Section */}
-      <div className="insights-section">
-        <div className="insights-header">
-          <h2>Key Insights</h2>
-          <span className="insights-badge">AI-Powered</span>
-        </div>
-        <div className="insights-grid">
-          <div className="insight-card">
-            <div className="insight-icon trend-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21H4.6C4.03995 21 3.75992 21 3.54601 20.891C3.35785 20.7951 3.20487 20.6422 3.10899 20.454C3 20.2401 3 19.9601 3 19.4V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M7 14L12 9L16 13L21 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <h3>Trending Pattern</h3>
-            <p>Infrastructure escalations increased by 25% this week, primarily in the Azure VM category.</p>
-          </div>
-
-          <div className="insight-card">
-            <div className="insight-icon success-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7088 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <h3>Resolution Rate</h3>
-            <p>92% of escalations are being routed correctly on first attempt, saving an average of 2.5 hours per ticket.</p>
-          </div>
-
-          <div className="insight-card">
-            <div className="insight-icon warning-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <h3>Response Time</h3>
-            <p>Average initial response time is 45 minutes, 30% faster than target SLA for high-priority issues.</p>
-          </div>
-
-          <div className="insight-card">
-            <div className="insight-icon info-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <h3>Investment Area</h3>
-            <p>Consider expanding Database Engineering Team capacity - handling 40% above normal workload this month.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import EscalationList from './components/EscalationList';
 import EscalationDetail from './components/EscalationDetail';
 import Dashboard from './components/Dashboard';
+import Analytics from './components/Analytics';
 import { fetchEscalations } from './services/api';
 import { calculateStats } from './utils/helpers';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -127,6 +128,10 @@ function App() {
           )}
           
           {selectedView === 'analytics' && (
+            <Analytics escalations={filteredEscalations} />
+          )}
+          
+          {selectedView === 'dashboard' && (
             <Dashboard escalations={filteredEscalations} />
           )}
         </main>

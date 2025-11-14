@@ -23,17 +23,21 @@ body {
 .app-layout {
   display: flex;
   flex: 1;
-  background: #f9fafb;
+  background: var(--bg-primary);
+  transition: background-color 0.3s ease;
+  position: relative;
 }
 
 .main-content {
   flex: 1;
-  background: #f9fafb;
+  background: var(--bg-primary);
   min-height: calc(100vh - 73px);
+  margin-left: 280px;
   overflow-x: hidden;
+  overflow-y: auto;
+  transition: background-color 0.3s ease;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -65,33 +69,38 @@ body {
   }
 }
 
-/* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: var(--bg-tertiary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--text-tertiary);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--text-secondary);
 }
 
-/* Focus styles */
+.dark-mode ::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
+}
+
 button:focus-visible,
 input:focus-visible {
   outline: 2px solid #0078d4;
   outline-offset: 2px;
 }
 
-/* Utility classes */
 .text-center {
   text-align: center;
 }
@@ -120,9 +129,18 @@ input:focus-visible {
   gap: 1.5rem;
 }
 
-/* Responsive */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 240px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
   }
 }

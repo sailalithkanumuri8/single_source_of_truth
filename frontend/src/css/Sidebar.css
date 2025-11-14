@@ -1,29 +1,21 @@
 .sidebar {
   width: 280px;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
   height: calc(100vh - 73px);
   overflow-y: auto;
-  position: sticky;
+  overflow-x: hidden;
+  position: fixed;
   top: 73px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+  left: 0;
+  box-shadow: 2px 0 10px var(--shadow-sm);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  display: none;
 }
 
 .sidebar-nav {
@@ -32,6 +24,7 @@
 
 .nav-section {
   margin-bottom: 2rem;
+  padding-top: 1rem;
 }
 
 .nav-item {
@@ -42,7 +35,7 @@
   padding: 0.75rem 1rem;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.95rem;
   font-weight: 500;
   border-radius: 10px;
@@ -53,7 +46,7 @@
 }
 
 .nav-item:hover {
-  background: #f3f4f6;
+  background: var(--bg-tertiary);
   color: #0078d4;
   transform: translateX(4px);
 }
@@ -63,6 +56,10 @@
   color: #0078d4;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 120, 212, 0.1);
+}
+
+.dark-mode .nav-item.active {
+  background: linear-gradient(135deg, rgba(0, 120, 212, 0.2) 0%, rgba(0, 120, 212, 0.15) 100%);
 }
 
 .nav-icon {
@@ -101,7 +98,7 @@
 .filter-section {
   margin-bottom: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--border-color);
 }
 
 .filter-section:first-of-type {
@@ -113,7 +110,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   letter-spacing: 0.5px;
   margin: 0 0 0.75rem 0;
   padding: 0 0.5rem;
@@ -133,7 +130,7 @@
   padding: 0.65rem 0.75rem;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 500;
   border-radius: 8px;
@@ -143,14 +140,14 @@
 }
 
 .filter-item:hover {
-  background: #f9fafb;
-  color: #374151;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   transform: translateX(2px);
 }
 
 .filter-item.active {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -170,14 +167,14 @@
 
 .filter-count {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-weight: 600;
   min-width: 24px;
   text-align: right;
 }
 
 .filter-item.active .filter-count {
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 1024px) {

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './App.css';
+import './css/LoadingError.css';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import EscalationList from './components/EscalationList';
@@ -7,6 +8,7 @@ import EscalationDetail from './components/EscalationDetail';
 import Dashboard from './components/Dashboard';
 import { fetchEscalations } from './services/api';
 import { calculateStats } from './utils/helpers';
+import { useDarkMode } from './hooks/useDarkMode';
 
 function App() {
   const [selectedView, setSelectedView] = useState('escalations');
@@ -20,6 +22,7 @@ function App() {
   const [escalations, setEscalations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, toggleDarkMode] = useDarkMode();
 
   useEffect(() => {
     const loadEscalations = async () => {
@@ -72,15 +75,8 @@ function App() {
   if (loading) {
     return (
       <div className="app">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          flexDirection: 'column',
-          gap: '1rem'
-        }}>
-          <div style={{ fontSize: '1.5rem' }}>Loading escalations...</div>
+        <div className="loading-container">
+          <div className="loading-message">Loading escalations...</div>
         </div>
       </div>
     );
@@ -89,28 +85,12 @@ function App() {
   if (error) {
     return (
       <div className="app">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          flexDirection: 'column',
-          gap: '1rem',
-          color: '#dc2626'
-        }}>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Error loading data</div>
-          <div>{error}</div>
+        <div className="error-container">
+          <div className="error-title">Error loading data</div>
+          <div className="error-message">{error}</div>
           <button 
-            onClick={() => window.location.reload()} 
-            style={{
-              padding: '0.5rem 1rem',
-              marginTop: '1rem',
-              cursor: 'pointer',
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.25rem'
-            }}
+            className="error-retry-button"
+            onClick={() => window.location.reload()}
           >
             Retry
           </button>
@@ -121,7 +101,13 @@ function App() {
 
   return (
     <div className="app">
-      <Header onSearch={setSearchTerm} searchTerm={searchTerm} />
+      <Header 
+        onSearch={setSearchTerm} 
+        searchTerm={searchTerm}
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        escalations={escalations}
+      />
       
       <div className="app-layout">
         <Sidebar 
@@ -133,10 +119,6 @@ function App() {
         />
         
         <main className="main-content">
-          {selectedView === 'dashboard' && (
-            <Dashboard escalations={escalations} />
-          )}
-          
           {selectedView === 'escalations' && (
             <EscalationList 
               escalations={filteredEscalations}
@@ -145,7 +127,7 @@ function App() {
           )}
           
           {selectedView === 'analytics' && (
-            <Dashboard escalations={escalations} />
+            <Dashboard escalations={filteredEscalations} />
           )}
         </main>
       </div>

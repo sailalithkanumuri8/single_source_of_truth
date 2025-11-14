@@ -3,10 +3,8 @@ import '../css/Dashboard.css';
 import { calculateStats, formatRelativeDate, PRIORITY_COLORS } from '../utils/helpers';
 
 const Dashboard = ({ escalations }) => {
-  // Calculate all statistics using the helper
   const stats = useMemo(() => calculateStats(escalations), [escalations]);
 
-  // Recent activity - get 5 most recent
   const recentEscalations = useMemo(() => 
     [...escalations]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))

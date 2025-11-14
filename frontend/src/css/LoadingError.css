@@ -1,0 +1,52 @@
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+}
+
+.loading-message {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.error-container {
+  color: var(--color-error);
+}
+
+.error-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.error-message {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.error-retry-button {
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  background-color: var(--color-brand-primary);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.error-retry-button:hover {
+  background-color: var(--color-brand-secondary);
+  transform: translateY(-1px);
+}
+
+.error-retry-button:active {
+  transform: translateY(0);
+}
+

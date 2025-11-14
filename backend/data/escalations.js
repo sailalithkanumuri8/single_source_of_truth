@@ -1,473 +1,529 @@
 const escalations = [
   {
-    id: "ESC-2024-001",
-    title: "Azure VM Performance Degradation",
-    description: "Customer experiencing significant performance issues with Azure VMs in West US 2 region. Multiple VMs showing high CPU utilization without corresponding workload increase.",
+    id: "ESC-INFRA-1",
+    title: "Azure VM CPU Saturation - West US 2",
+    description: "High CPU saturation across compute hosts in West US 2 causing degraded API throughput and slow response times.",
     status: "critical",
     priority: "P0",
     category: "Infrastructure",
     subcategory: "Compute",
-    createdAt: "2024-10-28T09:15:00Z",
-    updatedAt: "2024-10-31T14:30:00Z",
+    createdAt: "2024-11-01T08:00:00Z",
+    updatedAt: "2024-11-01T12:30:00Z",
     assignedTo: "Infrastructure Team",
     customer: "Contoso Ltd",
-    affectedServices: ["Azure Virtual Machines", "Azure Monitor"],
+    affectedServices: ["Azure VM", "Azure Compute Host"],
     routingReasoning: {
-      primaryReason: "Infrastructure performance pattern detected",
+      primaryReason: "Compute saturation",
       confidence: 0.94,
-      factors: [
-        "Historical escalations show Infrastructure Team resolves VM performance issues 40% faster",
-        "Team has domain expertise in West US 2 region infrastructure",
-        "Similar pattern resolved by this team in ESC-2024-789"
-      ],
-      suggestedActions: [
-        "Check region-wide compute health metrics",
-        "Review recent deployments in West US 2",
-        "Correlate with Azure status page updates"
-      ]
+      factors: ["host pressure", "cpu spike", "westus2"],
+      suggestedActions: ["scale out", "rebalance hosts", "validate workload spikes"]
     },
     context: {
-      impactLevel: "High - 200+ VMs affected",
-      businessImpact: "Production workloads experiencing 50% performance degradation",
+      impactLevel: "High",
+      businessImpact: "Prod slowdown",
       customerTier: "Enterprise",
       slaStatus: "At risk",
-      timeToSLA: "4 hours remaining",
-      relatedIncidents: ["INC-2024-1123", "INC-2024-1089"],
-      previousEscalations: 2,
-      estimatedResolutionTime: "6-8 hours"
+      timeToSLA: "3h",
+      relatedIncidents: ["INC-INFRA-10"],
+      previousEscalations: 3,
+      estimatedResolutionTime: "6h"
     },
     timeline: [
-      { timestamp: "2024-10-28T09:15:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-28T09:20:00Z", event: "Routed to Infrastructure Team", user: "AI Router" },
-      { timestamp: "2024-10-28T10:45:00Z", event: "Initial assessment completed", user: "Sarah Chen" },
-      { timestamp: "2024-10-31T14:30:00Z", event: "Mitigation in progress", user: "Mike Johnson" }
+      { timestamp: "2024-11-01T08:00:00Z", event: "CPU saturation detected", user: "System" },
+      { timestamp: "2024-11-01T09:20:00Z", event: "Host-level contention confirmed", user: "Kevin Lin" }
     ],
-    tags: ["performance", "azure-vm", "west-us-2", "p0", "production"]
+    tags: ["cpu", "compute", "westus2", "vm", "infra"]
   },
+
   {
-    id: "ESC-2024-002",
-    title: "Microsoft 365 Authentication Failures",
-    description: "Multiple customers reporting authentication failures when accessing Microsoft 365 services. Error code: AADSTS50058.",
+    id: "ESC-INFRA-2",
+    title: "Compute Host Contention in West US 2",
+    description: "Host contention events across multiple VM nodes causing latency and slower job processing.",
+    status: "high",
+    priority: "P1",
+    category: "Infrastructure",
+    subcategory: "Compute",
+    createdAt: "2024-11-02T09:15:00Z",
+    updatedAt: "2024-11-02T11:50:00Z",
+    assignedTo: "Infrastructure Team",
+    customer: "Contoso Ltd",
+    affectedServices: ["Azure VM"],
+    routingReasoning: {
+      primaryReason: "Host pressure pattern",
+      confidence: 0.91,
+      factors: ["ready queue", "host contention", "westus2"],
+      suggestedActions: ["migrate VMs", "shift load", "rebalance hypervisors"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Slow VM scheduling",
+      customerTier: "Enterprise",
+      slaStatus: "On track",
+      timeToSLA: "9h",
+      relatedIncidents: ["ESC-INFRA-1"],
+      previousEscalations: 2,
+      estimatedResolutionTime: "5h"
+    },
+    timeline: [
+      { timestamp: "2024-11-02T09:15:00Z", event: "Performance alert", user: "System" }
+    ],
+    tags: ["infra", "host", "compute", "westus2"]
+  },
+
+  {
+    id: "ESC-INFRA-3",
+    title: "Burst Load Impacting VM Autoscaling",
+    description: "Sudden burst CPU workloads causing slow VM autoscale reactions leading to intermittent API timeouts.",
+    status: "medium",
+    priority: "P2",
+    category: "Infrastructure",
+    subcategory: "Compute",
+    createdAt: "2024-11-03T10:45:00Z",
+    updatedAt: "2024-11-03T13:55:00Z",
+    assignedTo: "Infrastructure Team",
+    customer: "Contoso Ltd",
+    affectedServices: ["VMSS"],
+    routingReasoning: {
+      primaryReason: "Burst load correlation",
+      confidence: 0.89,
+      factors: ["burst traffic", "autoscale delay", "westus2"],
+      suggestedActions: ["add buffer", "increase baseline instances", "optimize autoscale rules"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Autoscale delays",
+      customerTier: "Enterprise",
+      slaStatus: "On track",
+      timeToSLA: "22h",
+      relatedIncidents: ["ESC-INFRA-1", "ESC-INFRA-2"],
+      previousEscalations: 1,
+      estimatedResolutionTime: "7h"
+    },
+    timeline: [
+      { timestamp: "2024-11-03T10:45:00Z", event: "Autoscale alarms triggered", user: "System" }
+    ],
+    tags: ["vmss", "infra", "burst", "westus2"]
+  },
+
+  {
+    id: "ESC-INFRA-4",
+    title: "VM Ready-Time Spike Across Compute Cluster",
+    description: "High CPU ready-time leading to slow task scheduling on VM workloads.",
+    status: "high",
+    priority: "P1",
+    category: "Infrastructure",
+    subcategory: "Compute",
+    createdAt: "2024-11-04T07:20:00Z",
+    updatedAt: "2024-11-04T10:10:00Z",
+    assignedTo: "Infrastructure Team",
+    customer: "Contoso Ltd",
+    affectedServices: ["Azure VM"],
+    routingReasoning: {
+      primaryReason: "Ready queue spike",
+      confidence: 0.91,
+      factors: ["cpu ready", "host congestion", "westus2"],
+      suggestedActions: ["increase VM size", "shift workload", "split node pools"]
+    },
+    context: {
+      impactLevel: "High",
+      businessImpact: "Processing delays",
+      customerTier: "Enterprise",
+      slaStatus: "At risk",
+      timeToSLA: "4h",
+      relatedIncidents: ["ESC-INFRA-1"],
+      previousEscalations: 3,
+      estimatedResolutionTime: "6h"
+    },
+    timeline: [
+      { timestamp: "2024-11-04T07:20:00Z", event: "High ready-time detected", user: "System" }
+    ],
+    tags: ["ready", "compute", "infra", "westus2"]
+  },
+
+  {
+    id: "ESC-INFRA-5",
+    title: "Hypervisor Pressure on West US 2 VM Hosts",
+    description: "Hypervisor contention impacting VM workloads with intermittent CPU starvation.",
+    status: "medium",
+    priority: "P2",
+    category: "Infrastructure",
+    subcategory: "Compute",
+    createdAt: "2024-11-05T06:30:00Z",
+    updatedAt: "2024-11-05T09:40:00Z",
+    assignedTo: "Infrastructure Team",
+    customer: "Contoso Ltd",
+    affectedServices: ["Azure Hypervisor", "Azure VM"],
+    routingReasoning: {
+      primaryReason: "Hypervisor overload",
+      confidence: 0.88,
+      factors: ["host load", "hypervisor pressure", "westus2"],
+      suggestedActions: ["rebalance host assignments", "decrease density", "shift workloads"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Latency spikes",
+      customerTier: "Enterprise",
+      slaStatus: "On track",
+      timeToSLA: "15h",
+      relatedIncidents: ["ESC-INFRA-1", "ESC-INFRA-2"],
+      previousEscalations: 1,
+      estimatedResolutionTime: "5h"
+    },
+    timeline: [
+      { timestamp: "2024-11-05T06:30:00Z", event: "Hypervisor imbalance detected", user: "System" }
+    ],
+    tags: ["hypervisor", "infra", "compute", "westus2"]
+  },
+
+  {
+    id: "ESC-ID-1",
+    title: "AAD Authentication Loop - AADSTS50058",
+    description: "Repeated AADSTS50058 sign-in failures across multiple customers due to session expiration mismatch.",
     status: "high",
     priority: "P1",
     category: "Identity & Access",
     subcategory: "Authentication",
-    createdAt: "2024-10-30T14:22:00Z",
-    updatedAt: "2024-10-31T11:15:00Z",
+    createdAt: "2024-11-01T07:25:00Z",
+    updatedAt: "2024-11-01T10:40:00Z",
     assignedTo: "Identity Services Team",
     customer: "Multiple Customers",
-    affectedServices: ["Azure Active Directory", "Microsoft 365", "Exchange Online"],
+    affectedServices: ["Azure AD"],
     routingReasoning: {
-      primaryReason: "Authentication pattern with AAD error codes",
-      confidence: 0.97,
-      factors: [
-        "Error code AADSTS50058 is Azure AD specific",
-        "Identity Services Team owns authentication pipeline",
-        "Cross-customer impact suggests infrastructure-level issue",
-        "Team has 95% success rate on AAD auth issues"
-      ],
-      suggestedActions: [
-        "Check Azure AD service health dashboard",
-        "Review recent certificate updates",
-        "Verify conditional access policy changes",
-        "Check for token signing key rotation events"
-      ]
+      primaryReason: "Session mismatch",
+      confidence: 0.92,
+      factors: ["stale token", "expired session", "token mismatch"],
+      suggestedActions: ["force reauth", "clear session", "validate CA config"]
     },
     context: {
-      impactLevel: "Medium - 50+ customers affected",
-      businessImpact: "Users unable to access email and collaboration tools",
-      customerTier: "Mixed (Enterprise & SMB)",
+      impactLevel: "High",
+      businessImpact: "Login disruption",
+      customerTier: "Mixed",
       slaStatus: "On track",
-      timeToSLA: "18 hours remaining",
-      relatedIncidents: ["INC-2024-1156", "INC-2024-1157", "INC-2024-1159"],
-      previousEscalations: 0,
-      estimatedResolutionTime: "4-6 hours"
+      timeToSLA: "7h",
+      relatedIncidents: ["INC-ID-10"],
+      previousEscalations: 2,
+      estimatedResolutionTime: "6h"
     },
     timeline: [
-      { timestamp: "2024-10-30T14:22:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-30T14:25:00Z", event: "Routed to Identity Services Team", user: "AI Router" },
-      { timestamp: "2024-10-30T15:10:00Z", event: "Root cause identified", user: "Alex Kumar" },
-      { timestamp: "2024-10-31T11:15:00Z", event: "Fix deployed to staging", user: "Jennifer Liu" }
+      { timestamp: "2024-11-01T07:25:00Z", event: "Auth loop detected", user: "System" }
     ],
-    tags: ["authentication", "aad", "microsoft-365", "multi-customer", "p1"]
+    tags: ["aad", "auth", "50058", "identity"]
   },
+
   {
-    id: "ESC-2024-003",
-    title: "SQL Database Connection Timeouts",
-    description: "Customer experiencing intermittent connection timeouts to Azure SQL Database. Pattern shows timeouts occurring during peak hours (9 AM - 5 PM PST).",
+    id: "ESC-ID-2",
+    title: "Token Issuer Validation Failure",
+    description: "Token issuer mismatch causing authentication failures across multiple organizations.",
+    status: "high",
+    priority: "P1",
+    category: "Identity & Access",
+    subcategory: "Authentication",
+    createdAt: "2024-11-02T08:40:00Z",
+    updatedAt: "2024-11-02T10:00:00Z",
+    assignedTo: "Identity Services Team",
+    customer: "Multiple Organizations",
+    affectedServices: ["Azure AD"],
+    routingReasoning: {
+      primaryReason: "Issuer mismatch",
+      confidence: 0.93,
+      factors: ["issuer mismatch", "token invalid", "metadata stale"],
+      suggestedActions: ["refresh metadata", "revalidate issuer", "compare keys"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Intermittent login failures",
+      customerTier: "Mixed",
+      slaStatus: "On track",
+      timeToSLA: "11h",
+      relatedIncidents: ["ESC-ID-1"],
+      previousEscalations: 3,
+      estimatedResolutionTime: "6h"
+    },
+    timeline: [
+      { timestamp: "2024-11-02T08:40:00Z", event: "Issuer mismatch spike", user: "System" }
+    ],
+    tags: ["aad", "issuer", "token", "identity"]
+  },
+
+  {
+    id: "ESC-ID-3",
+    title: "Conditional Access Blocking Token Issuance",
+    description: "CA policy conflict preventing tokens from being issued to key applications.",
+    status: "medium",
+    priority: "P2",
+    category: "Identity & Access",
+    subcategory: "Policies",
+    createdAt: "2024-11-03T09:10:00Z",
+    updatedAt: "2024-11-03T12:00:00Z",
+    assignedTo: "Identity Services Team",
+    customer: "Enterprise Tenants",
+    affectedServices: ["Azure AD"],
+    routingReasoning: {
+      primaryReason: "Policy conflict",
+      confidence: 0.87,
+      factors: ["policy mismatch", "invalid CA rule", "token blocked"],
+      suggestedActions: ["review rule ordering", "disable conflicting rule", "validate exceptions"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Blocked sign-ins",
+      customerTier: "Enterprise",
+      slaStatus: "On track",
+      timeToSLA: "20h",
+      relatedIncidents: ["ESC-ID-1", "ESC-ID-2"],
+      previousEscalations: 1,
+      estimatedResolutionTime: "5h"
+    },
+    timeline: [
+      { timestamp: "2024-11-03T09:10:00Z", event: "CA failure detected", user: "System" }
+    ],
+    tags: ["ca", "aad", "identity", "auth"]
+  },
+
+  {
+    id: "ESC-ID-4",
+    title: "AAD Redirect Loop Impacting Legacy Apps",
+    description: "Redirect-to-login loop affecting legacy apps relying on outdated AAD login flows.",
+    status: "high",
+    priority: "P1",
+    category: "Identity & Access",
+    subcategory: "Authentication",
+    createdAt: "2024-11-04T08:50:00Z",
+    updatedAt: "2024-11-04T10:10:00Z",
+    assignedTo: "Identity Services team",
+    customer: "Enterprise Tenants",
+    affectedServices: ["Azure AD"],
+    routingReasoning: {
+      primaryReason: "Redirect mismatch",
+      confidence: 0.89,
+      factors: ["stale redirect", "legacy app", "bad auth header"],
+      suggestedActions: ["update redirect URL", "refresh session", "disable legacy flow"]
+    },
+    context: {
+      impactLevel: "High",
+      businessImpact: "Users unable to sign in",
+      customerTier: "Enterprise",
+      slaStatus: "At risk",
+      timeToSLA: "4h",
+      relatedIncidents: ["ESC-ID-1"],
+      previousEscalations: 3,
+      estimatedResolutionTime: "6h"
+    },
+    timeline: [
+      { timestamp: "2024-11-04T08:50:00Z", event: "Redirect loop identified", user: "System" }
+    ],
+    tags: ["redirect", "auth", "identity", "aad"]
+  },
+
+  {
+    id: "ESC-ID-5",
+    title: "Key Roll Event Causing Token Validation Failures",
+    description: "AAD key roll causing mismatched signing key errors for older application stacks.",
+    status: "medium",
+    priority: "P2",
+    category: "Identity & Access",
+    subcategory: "Authentication",
+    createdAt: "2024-11-05T06:40:00Z",
+    updatedAt: "2024-11-05T08:30:00Z",
+    assignedTo: "Identity Services Team",
+    customer: "Multiple Customers",
+    affectedServices: ["Azure AD"],
+    routingReasoning: {
+      primaryReason: "Key mismatch",
+      confidence: 0.86,
+      factors: ["stale cert", "old signing key", "metadata not refreshed"],
+      suggestedActions: ["update certificates", "refresh metadata", "restart auth service"]
+    },
+    context: {
+      impactLevel: "Medium",
+      businessImpact: "Legacy auth failures",
+      customerTier: "Mixed",
+      slaStatus: "On track",
+      timeToSLA: "18h",
+      relatedIncidents: ["ESC-ID-1", "ESC-ID-2", "ESC-ID-3"],
+      previousEscalations: 1,
+      estimatedResolutionTime: "5h"
+    },
+    timeline: [
+      { timestamp: "2024-11-05T06:40:00Z", event: "Key roll mismatch detected", user: "System" }
+    ],
+    tags: ["key", "aad", "identity", "auth"]
+  },
+
+  {
+    id: "ESC-DATA-1",
+    title: "SQL DTU Surge Causing Severe Timeouts",
+    description: "DTU saturation leading to query timeouts and slow application responses.",
     status: "medium",
     priority: "P2",
     category: "Data & Storage",
     subcategory: "SQL Database",
-    createdAt: "2024-10-29T16:30:00Z",
-    updatedAt: "2024-10-31T09:45:00Z",
+    createdAt: "2024-11-01T11:15:00Z",
+    updatedAt: "2024-11-01T14:00:00Z",
     assignedTo: "Database Engineering Team",
     customer: "Fabrikam Inc",
-    affectedServices: ["Azure SQL Database", "Application Gateway"],
+    affectedServices: ["Azure SQL"],
     routingReasoning: {
-      primaryReason: "Database performance pattern with time-based correlation",
-      confidence: 0.89,
-      factors: [
-        "Connection timeout pattern suggests resource exhaustion",
-        "Database Engineering Team has expertise in connection pooling issues",
-        "Peak hour correlation indicates scaling or resource limits",
-        "Similar pattern in ESC-2024-456 resolved by this team"
-      ],
-      suggestedActions: [
-        "Review DTU/vCore utilization during peak hours",
-        "Analyze connection pool configuration",
-        "Check for blocking queries or locks",
-        "Evaluate auto-scaling configuration"
-      ]
+      primaryReason: "DTU overload",
+      confidence: 0.88,
+      factors: ["dtu high", "blocking", "slow query"],
+      suggestedActions: ["add compute", "fix slow plan", "kill blockers"]
     },
     context: {
-      impactLevel: "Medium - Single customer, 3 databases",
-      businessImpact: "Application performance degraded during business hours",
+      impactLevel: "Medium",
+      businessImpact: "Slow reporting",
       customerTier: "Enterprise",
       slaStatus: "On track",
-      timeToSLA: "36 hours remaining",
-      relatedIncidents: ["INC-2024-1001"],
-      previousEscalations: 1,
-      estimatedResolutionTime: "8-12 hours"
+      timeToSLA: "22h",
+      relatedIncidents: ["INC-DATA-10"],
+      previousEscalations: 2,
+      estimatedResolutionTime: "7h"
     },
     timeline: [
-      { timestamp: "2024-10-29T16:30:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-29T16:35:00Z", event: "Routed to Database Engineering Team", user: "AI Router" },
-      { timestamp: "2024-10-30T10:20:00Z", event: "Performance metrics collected", user: "David Park" },
-      { timestamp: "2024-10-31T09:45:00Z", event: "Scaling recommendation prepared", user: "Lisa Zhang" }
+      { timestamp: "2024-11-01T11:15:00Z", event: "Timeouts detected", user: "System" }
     ],
-    tags: ["sql-database", "connection-timeout", "performance", "peak-hours", "p2"]
+    tags: ["sql", "timeout", "dtu", "db"]
   },
+
   {
-    id: "ESC-2024-004",
-    title: "Azure DevOps Pipeline Failures",
-    description: "CI/CD pipelines failing with 'Resource not available' error. Affects multiple projects across the organization.",
+    id: "ESC-DATA-2",
+    title: "SQL Lock Contention on High-Traffic Table",
+    description: "Blocking chain observed on critical transaction table resulting in elevated timeout rates.",
     status: "high",
     priority: "P1",
-    category: "DevOps",
-    subcategory: "Pipelines",
-    createdAt: "2024-10-31T08:00:00Z",
-    updatedAt: "2024-10-31T13:20:00Z",
-    assignedTo: "DevOps Platform Team",
-    customer: "Northwind Traders",
-    affectedServices: ["Azure DevOps", "Azure Pipelines", "Container Registry"],
+    category: "Data & Storage",
+    subcategory: "SQL Database",
+    createdAt: "2024-11-02T12:30:00Z",
+    updatedAt: "2024-11-02T15:10:00Z",
+    assignedTo: "Database Engineering Team",
+    customer: "Fabrikam Inc",
+    affectedServices: ["Azure SQL"],
     routingReasoning: {
-      primaryReason: "DevOps platform issue with resource availability",
-      confidence: 0.92,
-      factors: [
-        "Error pattern matches agent pool exhaustion",
-        "DevOps Platform Team owns pipeline infrastructure",
-        "Multi-project impact suggests platform-level issue",
-        "Team has fastest mean time to resolution for pipeline issues"
-      ],
-      suggestedActions: [
-        "Check agent pool availability and capacity",
-        "Review recent pipeline agent updates",
-        "Verify service principal permissions",
-        "Check Container Registry health"
-      ]
+      primaryReason: "Lock chain",
+      confidence: 0.91,
+      factors: ["blocking", "deadlock", "hot table"],
+      suggestedActions: ["kill blocker", "optimize index", "reduce TX duration"]
     },
     context: {
-      impactLevel: "High - Blocking deployments for 15+ teams",
-      businessImpact: "Development velocity impacted, deployments blocked",
-      customerTier: "Enterprise",
-      slaStatus: "On track",
-      timeToSLA: "20 hours remaining",
-      relatedIncidents: ["INC-2024-1178", "INC-2024-1179"],
-      previousEscalations: 0,
-      estimatedResolutionTime: "3-5 hours"
-    },
-    timeline: [
-      { timestamp: "2024-10-31T08:00:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-31T08:05:00Z", event: "Routed to DevOps Platform Team", user: "AI Router" },
-      { timestamp: "2024-10-31T09:30:00Z", event: "Agent pool capacity increased", user: "Rachel Green" },
-      { timestamp: "2024-10-31T13:20:00Z", event: "Monitoring for stability", user: "Tom Anderson" }
-    ],
-    tags: ["azure-devops", "pipelines", "resource-availability", "ci-cd", "p1"]
-  },
-  {
-    id: "ESC-2024-005",
-    title: "Network Latency Spike in Express Route",
-    description: "Customer reporting 300-500ms latency increase on Express Route connection between on-premises datacenter and Azure.",
-    status: "critical",
-    priority: "P0",
-    category: "Networking",
-    subcategory: "Express Route",
-    createdAt: "2024-10-31T06:45:00Z",
-    updatedAt: "2024-10-31T15:10:00Z",
-    assignedTo: "Network Engineering Team",
-    customer: "Adventure Works",
-    affectedServices: ["Azure Express Route", "Virtual Network"],
-    routingReasoning: {
-      primaryReason: "Network performance degradation on dedicated circuit",
-      confidence: 0.96,
-      factors: [
-        "Express Route issues require specialized network expertise",
-        "Network Engineering Team owns Express Route operations",
-        "Latency pattern suggests BGP or routing issue",
-        "Team has direct access to telco provider escalation paths"
-      ],
-      suggestedActions: [
-        "Check Express Route circuit health metrics",
-        "Review BGP route advertisements",
-        "Verify peering session status",
-        "Engage telco provider if needed"
-      ]
-    },
-    context: {
-      impactLevel: "Critical - Hybrid cloud connectivity degraded",
-      businessImpact: "Real-time data sync affected, applications timing out",
+      impactLevel: "High",
+      businessImpact: "Transaction delay",
       customerTier: "Enterprise",
       slaStatus: "At risk",
-      timeToSLA: "2 hours remaining",
-      relatedIncidents: ["INC-2024-1190"],
-      previousEscalations: 1,
-      estimatedResolutionTime: "4-6 hours"
+      timeToSLA: "5h",
+      relatedIncidents: ["ESC-DATA-1"],
+      previousEscalations: 3,
+      estimatedResolutionTime: "6h"
     },
     timeline: [
-      { timestamp: "2024-10-31T06:45:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-31T06:50:00Z", event: "Routed to Network Engineering Team", user: "AI Router" },
-      { timestamp: "2024-10-31T08:15:00Z", event: "Circuit diagnostics initiated", user: "Kevin Brown" },
-      { timestamp: "2024-10-31T15:10:00Z", event: "Telco provider engaged", user: "Maria Garcia" }
+      { timestamp: "2024-11-02T12:30:00Z", event: "Blocking chain detected", user: "System" }
     ],
-    tags: ["express-route", "network-latency", "hybrid-cloud", "connectivity", "p0"]
+    tags: ["sql", "locking", "db", "contention"]
   },
+
   {
-    id: "ESC-2024-006",
-    title: "Storage Account Access Denied Errors",
-    description: "Application receiving 403 Forbidden errors when accessing blob storage. Issue started after recent security policy update.",
+    id: "ESC-DATA-3",
+    title: "Connection Pool Exhaustion Under Load",
+    description: "Active connection pool maxed due to long-running queries and idle session buildup.",
     status: "medium",
     priority: "P2",
     category: "Data & Storage",
-    subcategory: "Blob Storage",
-    createdAt: "2024-10-30T11:00:00Z",
-    updatedAt: "2024-10-31T10:30:00Z",
-    assignedTo: "Storage Services Team",
-    customer: "Tailspin Toys",
-    affectedServices: ["Azure Blob Storage", "Azure Key Vault"],
+    subcategory: "SQL Database",
+    createdAt: "2024-11-03T10:20:00Z",
+    updatedAt: "2024-11-03T13:00:00Z",
+    assignedTo: "Database Engineering Team",
+    customer: "Fabrikam Inc",
+    affectedServices: ["Azure SQL"],
     routingReasoning: {
-      primaryReason: "Storage access control issue post-policy change",
-      confidence: 0.88,
-      factors: [
-        "403 errors indicate permissions or access control issue",
-        "Storage Services Team owns blob storage and access policies",
-        "Timing correlation with policy update suggests configuration issue",
-        "Team has expertise in SAS tokens and RBAC troubleshooting"
-      ],
-      suggestedActions: [
-        "Review recent storage account policy changes",
-        "Verify SAS token permissions and expiration",
-        "Check RBAC role assignments",
-        "Validate firewall and network rules"
-      ]
+      primaryReason: "Connection limit",
+      confidence: 0.87,
+      factors: ["max connections", "idle sessions", "slow query"],
+      suggestedActions: ["increase pool", "clean idle", "optimize slow query"]
     },
     context: {
-      impactLevel: "Medium - Single application affected",
-      businessImpact: "File upload/download functionality unavailable",
-      customerTier: "Standard",
-      slaStatus: "On track",
-      timeToSLA: "40 hours remaining",
-      relatedIncidents: ["INC-2024-1145"],
-      previousEscalations: 0,
-      estimatedResolutionTime: "2-4 hours"
-    },
-    timeline: [
-      { timestamp: "2024-10-30T11:00:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-30T11:10:00Z", event: "Routed to Storage Services Team", user: "AI Router" },
-      { timestamp: "2024-10-30T14:30:00Z", event: "Policy misconfiguration identified", user: "Amy Wilson" },
-      { timestamp: "2024-10-31T10:30:00Z", event: "Fix prepared for validation", user: "James Taylor" }
-    ],
-    tags: ["blob-storage", "access-denied", "permissions", "security-policy", "p2"]
-  },
-  {
-    id: "ESC-2024-007",
-    title: "Kubernetes Cluster Node Failures",
-    description: "AKS cluster experiencing node failures with nodes becoming NotReady. Multiple pods being evicted and rescheduled.",
-    status: "critical",
-    priority: "P0",
-    category: "Containers",
-    subcategory: "Kubernetes",
-    createdAt: "2024-10-31T04:30:00Z",
-    updatedAt: "2024-10-31T14:45:00Z",
-    assignedTo: "Container Platform Team",
-    customer: "Woodgrove Bank",
-    affectedServices: ["Azure Kubernetes Service", "Container Instances"],
-    routingReasoning: {
-      primaryReason: "AKS infrastructure stability issue",
-      confidence: 0.95,
-      factors: [
-        "Node NotReady status indicates infrastructure-level issue",
-        "Container Platform Team owns AKS cluster operations",
-        "Pattern matches known memory pressure scenarios",
-        "Team has on-call expertise for cluster emergencies"
-      ],
-      suggestedActions: [
-        "Check node resource utilization (CPU, memory, disk)",
-        "Review kubelet logs on affected nodes",
-        "Verify cluster auto-scaler configuration",
-        "Check for kernel panics or OOM kills"
-      ]
-    },
-    context: {
-      impactLevel: "Critical - 8 of 12 nodes affected",
-      businessImpact: "Production workloads experiencing intermittent failures",
+      impactLevel: "Medium",
+      businessImpact: "Login failures",
       customerTier: "Enterprise",
-      slaStatus: "At risk",
-      timeToSLA: "3 hours remaining",
-      relatedIncidents: ["INC-2024-1195", "INC-2024-1196"],
+      slaStatus: "On track",
+      timeToSLA: "19h",
+      relatedIncidents: ["ESC-DATA-1", "ESC-DATA-2"],
       previousEscalations: 2,
-      estimatedResolutionTime: "4-8 hours"
+      estimatedResolutionTime: "6h"
     },
     timeline: [
-      { timestamp: "2024-10-31T04:30:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-31T04:35:00Z", event: "Routed to Container Platform Team", user: "AI Router" },
-      { timestamp: "2024-10-31T06:00:00Z", event: "Emergency node pool added", user: "Chris Martinez" },
-      { timestamp: "2024-10-31T14:45:00Z", event: "Root cause analysis in progress", user: "Nina Patel" }
+      { timestamp: "2024-11-03T10:20:00Z", event: "Pool exhaustion detected", user: "System" }
     ],
-    tags: ["aks", "kubernetes", "node-failure", "cluster-health", "p0"]
+    tags: ["sql", "pool", "db", "connections"]
   },
+
   {
-    id: "ESC-2024-008",
-    title: "Power BI Report Rendering Issues",
-    description: "Enterprise customers unable to render complex Power BI reports. Reports timeout after 2 minutes.",
-    status: "high",
-    priority: "P1",
-    category: "Analytics",
-    subcategory: "Power BI",
-    createdAt: "2024-10-30T13:15:00Z",
-    updatedAt: "2024-10-31T12:00:00Z",
-    assignedTo: "Analytics Platform Team",
-    customer: "Multiple Enterprise Customers",
-    affectedServices: ["Power BI", "Azure Analysis Services"],
-    routingReasoning: {
-      primaryReason: "Power BI rendering performance issue",
-      confidence: 0.91,
-      factors: [
-        "Timeout pattern suggests query or rendering optimization needed",
-        "Analytics Platform Team owns Power BI infrastructure",
-        "Complex report correlation indicates data model issue",
-        "Team has expertise in query optimization and caching"
-      ],
-      suggestedActions: [
-        "Review report query execution plans",
-        "Check Analysis Services capacity metrics",
-        "Analyze data model complexity and relationships",
-        "Verify premium capacity health"
-      ]
-    },
-    context: {
-      impactLevel: "High - Multiple enterprise customers affected",
-      businessImpact: "Executive dashboards unavailable for business decisions",
-      customerTier: "Enterprise",
-      slaStatus: "On track",
-      timeToSLA: "12 hours remaining",
-      relatedIncidents: ["INC-2024-1167", "INC-2024-1168"],
-      previousEscalations: 1,
-      estimatedResolutionTime: "6-10 hours"
-    },
-    timeline: [
-      { timestamp: "2024-10-30T13:15:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-30T13:20:00Z", event: "Routed to Analytics Platform Team", user: "AI Router" },
-      { timestamp: "2024-10-30T16:45:00Z", event: "Query bottleneck identified", user: "Oliver Smith" },
-      { timestamp: "2024-10-31T12:00:00Z", event: "Optimization script prepared", user: "Emma Davis" }
-    ],
-    tags: ["power-bi", "report-rendering", "performance", "analytics", "p1"]
-  },
-  {
-    id: "ESC-2024-009",
-    title: "Azure Functions Cold Start Latency",
-    description: "Serverless functions experiencing 10-15 second cold start times, impacting API response times significantly.",
+    id: "ESC-DATA-4",
+    title: "Azure SQL Index Fragmentation Spiking Query Latency",
+    description: "Highly fragmented indexes leading to slow query performance and elevated IO waits.",
     status: "medium",
     priority: "P2",
-    category: "Compute",
-    subcategory: "Serverless",
-    createdAt: "2024-10-29T09:20:00Z",
-    updatedAt: "2024-10-31T08:15:00Z",
-    assignedTo: "Serverless Platform Team",
-    customer: "Litware Inc",
-    affectedServices: ["Azure Functions", "Application Insights"],
+    category: "Data & Storage",
+    subcategory: "SQL Database",
+    createdAt: "2024-11-04T09:40:00Z",
+    updatedAt: "2024-11-04T11:30:00Z",
+    assignedTo: "Database Engineering Team",
+    customer: "Fabrikam Inc",
+    affectedServices: ["Azure SQL"],
     routingReasoning: {
-      primaryReason: "Serverless cold start optimization needed",
-      confidence: 0.87,
-      factors: [
-        "Cold start pattern is Azure Functions specific",
-        "Serverless Platform Team owns function runtime optimization",
-        "Latency values suggest initialization bottleneck",
-        "Team has tools for warm-up and pre-warming strategies"
-      ],
-      suggestedActions: [
-        "Review function package size and dependencies",
-        "Analyze initialization code performance",
-        "Consider Premium plan or pre-warmed instances",
-        "Evaluate durable functions for stateful scenarios"
-      ]
+      primaryReason: "Fragmented indexing",
+      confidence: 0.86,
+      factors: ["fragmentation", "slow scan", "high IO"],
+      suggestedActions: ["rebuild index", "update stats", "partition table"]
     },
     context: {
-      impactLevel: "Medium - API endpoints affected",
-      businessImpact: "User-facing API experiencing slow response times",
-      customerTier: "Standard",
+      impactLevel: "Medium",
+      businessImpact: "Reporting delays",
+      customerTier: "Enterprise",
       slaStatus: "On track",
-      timeToSLA: "48 hours remaining",
-      relatedIncidents: ["INC-2024-1089"],
-      previousEscalations: 0,
-      estimatedResolutionTime: "4-6 hours"
+      timeToSLA: "16h",
+      relatedIncidents: ["ESC-DATA-1", "ESC-DATA-2", "ESC-DATA-3"],
+      previousEscalations: 1,
+      estimatedResolutionTime: "5h"
     },
     timeline: [
-      { timestamp: "2024-10-29T09:20:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-29T09:30:00Z", event: "Routed to Serverless Platform Team", user: "AI Router" },
-      { timestamp: "2024-10-30T11:00:00Z", event: "Package analysis completed", user: "Sophia Lee" },
-      { timestamp: "2024-10-31T08:15:00Z", event: "Optimization recommendations provided", user: "Daniel Kim" }
+      { timestamp: "2024-11-04T09:40:00Z", event: "Fragmentation detected", user: "System" }
     ],
-    tags: ["azure-functions", "cold-start", "latency", "serverless", "p2"]
+    tags: ["sql", "index", "db", "latency"]
   },
+
   {
-    id: "ESC-2024-010",
-    title: "Cosmos DB Throttling Issues",
-    description: "Application experiencing 429 throttling errors on Cosmos DB. RU consumption spiking during normal operations.",
+    id: "ESC-DATA-5",
+    title: "Hot Partition Causing Cosmos Throttling",
+    description: "Cosmos DB hitting 429 throttling errors due to uneven partition distribution.",
     status: "high",
     priority: "P1",
     category: "Data & Storage",
     subcategory: "Cosmos DB",
-    createdAt: "2024-10-31T10:00:00Z",
-    updatedAt: "2024-10-31T15:30:00Z",
-    assignedTo: "Cosmos DB Team",
-    customer: "Alpine Ski House",
-    affectedServices: ["Azure Cosmos DB", "Application Insights"],
+    createdAt: "2024-11-05T07:50:00Z",
+    updatedAt: "2024-11-05T10:20:00Z",
+    assignedTo: "Database Engineering Team",
+    customer: "Fabrikam Inc",
+    affectedServices: ["Cosmos DB"],
     routingReasoning: {
-      primaryReason: "Cosmos DB capacity and optimization issue",
-      confidence: 0.93,
-      factors: [
-        "429 errors are Cosmos DB specific throttling responses",
-        "Cosmos DB Team has expertise in RU optimization",
-        "Pattern suggests partition key design or over-provisioning issue",
-        "Team has direct access to Cosmos DB telemetry and diagnostics"
-      ],
-      suggestedActions: [
-        "Review RU consumption patterns by operation",
-        "Analyze partition key distribution",
-        "Check for hot partitions",
-        "Evaluate auto-scale vs manual provisioning"
-      ]
+      primaryReason: "Hot partition",
+      confidence: 0.9,
+      factors: ["hot partition", "ru spike", "imbalanced distribution"],
+      suggestedActions: ["change partition key", "add throughput", "split hot partition"]
     },
     context: {
-      impactLevel: "High - Core application functionality affected",
-      businessImpact: "User transactions failing, data writes rejected",
+      impactLevel: "High",
+      businessImpact: "Write throttling",
       customerTier: "Enterprise",
-      slaStatus: "On track",
-      timeToSLA: "16 hours remaining",
-      relatedIncidents: ["INC-2024-1200"],
-      previousEscalations: 0,
-      estimatedResolutionTime: "5-7 hours"
+      slaStatus: "At risk",
+      timeToSLA: "5h",
+      relatedIncidents: ["ESC-DATA-1"],
+      previousEscalations: 2,
+      estimatedResolutionTime: "7h"
     },
     timeline: [
-      { timestamp: "2024-10-31T10:00:00Z", event: "Escalation created", user: "System" },
-      { timestamp: "2024-10-31T10:05:00Z", event: "Routed to Cosmos DB Team", user: "AI Router" },
-      { timestamp: "2024-10-31T12:30:00Z", event: "Hot partition identified", user: "Robert Johnson" },
-      { timestamp: "2024-10-31T15:30:00Z", event: "Partition key redesign proposed", user: "Isabella Torres" }
+      { timestamp: "2024-11-05T07:50:00Z", event: "429 spike detected", user: "System" }
     ],
-    tags: ["cosmos-db", "throttling", "ru-consumption", "performance", "p1"]
+    tags: ["cosmos", "ru", "throttling", "db"]
   }
 ];
 
 module.exports = escalations;
-

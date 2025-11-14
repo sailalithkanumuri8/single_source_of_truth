@@ -10,18 +10,6 @@ const Sidebar = ({
 }) => {
   const menuItems = [
     { 
-      id: 'dashboard', 
-      label: 'Dashboard', 
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="3" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
-        </svg>
-      )
-    },
-    { 
       id: 'escalations', 
       label: 'All Escalations', 
       icon: (
@@ -132,13 +120,14 @@ const Sidebar = ({
             >
               <span className="filter-label">All Categories</span>
             </button>
-            {['Infrastructure', 'Identity & Access', 'Data & Storage', 'Networking', 'Containers'].map(category => (
+            {Object.keys(escalationStats?.byCategory || {}).sort().map(category => (
               <button
                 key={category}
                 className={`filter-item ${filters.category === category ? 'active' : ''}`}
                 onClick={() => onFilterChange({ ...filters, category })}
               >
                 <span className="filter-label">{category}</span>
+                <span className="filter-count">{escalationStats?.byCategory[category] || 0}</span>
               </button>
             ))}
           </div>

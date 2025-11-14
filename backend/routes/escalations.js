@@ -2,6 +2,82 @@ var express = require('express');
 var router = express.Router();
 var escalations = require('../data/escalations');
 
+
+const natural = require("natural");
+
+router.get('/:id/similar', (req, res) => {
+  const id = req.params.id;
+  const target = escalations.find(e => e.id === id);
+
+  if (!target) {
+    return res.status(404).json({ error: 'Escalation not found' });
+  }
+
+  const TfIdf = natural.TfIdf;
+  const tfidf = new TfIdf();
+
+  const buildDoc = (e) =>
+    `${e.title} ${e.description} ${e.category} ${e.subcategory} ${e.tags.join(" ")}`;
+
+  escalations.forEach(e => tfidf.addDocument(buildDoc(e)));
+
+  const targetIndex = escalations.findIndex(e => e.id === id);
+
+  const calculateCosineSimilarity = (idx1, idx2) => {
+    const terms1 = {};
+    const terms2 = {};
+
+    tfidf.listTerms(idx1).forEach(item => {
+      terms1[item.term] = item.tfidf;
+    });
+
+    tfidf.listTerms(idx2).forEach(item => {
+      terms2[item.term] = item.tfidf;
+    });
+
+    let dotProduct = 0;
+    let magnitude1 = 0;
+    let magnitude2 = 0;
+
+    const allTerms = new Set([...Object.keys(terms1), ...Object.keys(terms2)]);
+
+    allTerms.forEach(term => {
+      const val1 = terms1[term] || 0;
+      const val2 = terms2[term] || 0;
+      dotProduct += val1 * val2;
+      magnitude1 += val1 * val1;
+      magnitude2 += val2 * val2;
+    });
+
+    magnitude1 = Math.sqrt(magnitude1);
+    magnitude2 = Math.sqrt(magnitude2);
+
+    if (magnitude1 === 0 || magnitude2 === 0) return 0;
+
+    return dotProduct / (magnitude1 * magnitude2);
+  };
+
+  const SIMILARITY_THRESHOLD = 0.15; 
+
+  let similarities = [];
+
+  escalations.forEach((e, idx) => {
+    if (idx === targetIndex) return;
+
+    const similarity = calculateCosineSimilarity(targetIndex, idx);
+
+    if (similarity >= SIMILARITY_THRESHOLD) {
+      similarities.push({
+        escalation: e,
+        score: Number(similarity.toFixed(3))
+      });
+    }
+  });
+  similarities.sort((a, b) => b.score - a.score);
+
+  res.json(similarities.slice(0, 2));
+});
+
 router.get('/', function(req, res, next) {
   let filtered = [...escalations];
 
@@ -14,7 +90,18 @@ router.get('/', function(req, res, next) {
   }
 
   if (req.query.category && req.query.category !== 'all') {
-    filtered = filtered.filter(e => e.category === req.query.category);
+    const categoryMap = {
+      'data & storage': 'Data',          
+      'identity & access': 'Identity',    
+      'infrastructure': 'Infrastructure',
+      'networking': 'Networking',
+      'containers': 'Containers'
+    };
+    
+    const filterValue = req.query.category.toLowerCase();  
+    const actualCategory = categoryMap[filterValue] || req.query.category;
+    
+    filtered = filtered.filter(e => e.category === actualCategory);
   }
 
   if (req.query.search) {
@@ -66,6 +153,9 @@ router.get('/stats', function(req, res, next) {
 
   res.json(stats);
 });
+
+
+
 
 router.get('/:id', function(req, res, next) {
   const escalation = escalations.find(e => e.id === req.params.id);

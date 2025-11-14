@@ -134,7 +134,7 @@ function App() {
         
         <main className="main-content">
           {selectedView === 'dashboard' && (
-            <Dashboard escalations={escalations} />
+            <Dashboard escalations={filteredEscalations} />
           )}
           
           {selectedView === 'escalations' && (
@@ -145,7 +145,7 @@ function App() {
           )}
           
           {selectedView === 'analytics' && (
-            <Dashboard escalations={escalations} />
+            <Dashboard escalations={filteredEscalations} />
           )}
         </main>
       </div>

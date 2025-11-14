@@ -122,7 +122,7 @@ const Header = ({ onSearch, searchTerm, darkMode, onToggleDarkMode, escalations 
             </div>
             <div className="logo-text">
               <h1>Escalation Hub</h1>
-              <p className="subtitle">Microsoft Internal Support</p>
+              <p className="subtitle">Product@GT Fellowship</p>
             </div>
           </div>
         </div>

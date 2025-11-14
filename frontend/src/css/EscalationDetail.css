@@ -628,3 +628,33 @@
   }
 }
 
+.similar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.similar-item {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  border: 1px solid #e2e8f0;
+}
+
+.similar-item:hover {
+  background: #eef2ff;
+}
+
+.similar-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.similar-info {
+  font-size: 0.85rem;
+  color: #64748b;
+  display: flex;
+  gap: 0.5rem;
+}

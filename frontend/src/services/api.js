@@ -55,3 +55,15 @@ export const fetchEscalationStats = async () => {
   return await response.json();
 };
 
+export const fetchSimilarEscalations = async (id) => {
+  const url = `${API_BASE_URL}/escalations/${id}/similar`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch similar escalations`);
+  }
+
+  return await response.json();
+};
+
+

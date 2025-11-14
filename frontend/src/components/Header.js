@@ -121,8 +121,8 @@ const Header = ({ onSearch, searchTerm, darkMode, onToggleDarkMode, escalations 
               </svg>
             </div>
             <div className="logo-text">
-              <h1>Escalation Hub</h1>
-              <p className="subtitle">Product@GT Fellowship</p>
+              <h1>Compass AI</h1>
+              <p className="subtitle">Product @ GT Fellowship</p>
             </div>
           </div>
         </div>
@@ -220,7 +220,7 @@ const Header = ({ onSearch, searchTerm, darkMode, onToggleDarkMode, escalations 
             <div className="user-profile">
               <div className="user-avatar">ES</div>
               <div className="user-info">
-                <span className="user-name">Product@GT</span>
+                <span className="user-name">Product @ GT</span>
                 <span className="user-role">Support Engineer</span>
               </div>
             </div>

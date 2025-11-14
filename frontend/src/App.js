@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import EscalationList from './components/EscalationList';
 import EscalationDetail from './components/EscalationDetail';
 import Dashboard from './components/Dashboard';
+import FeedbackView from './components/FeedbackView';
 import { fetchEscalations } from './services/api';
 import { calculateStats } from './utils/helpers';
 import { useDarkMode } from './hooks/useDarkMode';
@@ -40,6 +41,18 @@ function App() {
 
     loadEscalations();
   }, []);
+
+  // Function to update an escalation (e.g., when override happens)
+  const updateEscalation = (escalationId, updates) => {
+    setEscalations(prev => prev.map(esc => 
+      esc.id === escalationId ? { ...esc, ...updates } : esc
+    ));
+    
+    // Also update selectedEscalation if it's the one being updated
+    if (selectedEscalation && selectedEscalation.id === escalationId) {
+      setSelectedEscalation(prev => ({ ...prev, ...updates }));
+    }
+  };
 
   const escalationStats = useMemo(() => calculateStats(escalations), [escalations]);
 
@@ -128,6 +141,13 @@ function App() {
           
           {selectedView === 'analytics' && (
             <Dashboard escalations={filteredEscalations} />
+          )}
+
+          {selectedView === 'feedback' && (
+            <FeedbackView 
+              escalations={escalations}
+              onUpdateEscalation={updateEscalation}
+            />
           )}
         </main>
       </div>

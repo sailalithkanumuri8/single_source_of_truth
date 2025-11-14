@@ -25,13 +25,16 @@ body {
   flex: 1;
   background: var(--bg-primary);
   transition: background-color 0.3s ease;
+  position: relative;
 }
 
 .main-content {
   flex: 1;
   background: var(--bg-primary);
   min-height: calc(100vh - 73px);
+  margin-left: 280px;
   overflow-x: hidden;
+  overflow-y: auto;
   transition: background-color 0.3s ease;
 }
 
@@ -126,8 +129,18 @@ input:focus-visible {
   gap: 1.5rem;
 }
 
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 240px;
+  }
+}
+
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
   }
 }

@@ -119,10 +119,6 @@ function App() {
         />
         
         <main className="main-content">
-          {selectedView === 'dashboard' && (
-            <Dashboard escalations={filteredEscalations} />
-          )}
-          
           {selectedView === 'escalations' && (
             <EscalationList 
               escalations={filteredEscalations}

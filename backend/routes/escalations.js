@@ -78,7 +78,6 @@ router.get('/:id/similar', (req, res) => {
   res.json(similarities.slice(0, 2));
 });
 
-
 router.get('/', function(req, res, next) {
   let filtered = [...escalations];
 
@@ -91,7 +90,18 @@ router.get('/', function(req, res, next) {
   }
 
   if (req.query.category && req.query.category !== 'all') {
-    filtered = filtered.filter(e => e.category === req.query.category);
+    const categoryMap = {
+      'data & storage': 'Data',          
+      'identity & access': 'Identity',    
+      'infrastructure': 'Infrastructure',
+      'networking': 'Networking',
+      'containers': 'Containers'
+    };
+    
+    const filterValue = req.query.category.toLowerCase();  
+    const actualCategory = categoryMap[filterValue] || req.query.category;
+    
+    filtered = filtered.filter(e => e.category === actualCategory);
   }
 
   if (req.query.search) {

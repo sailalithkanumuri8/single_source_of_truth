@@ -13,9 +13,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "NODE_OPTIONS=--localstorage-file=/tmp/node-localstorage.json react-scripts start",
+    "build": "NODE_OPTIONS=--localstorage-file=/tmp/node-localstorage.json react-scripts build",
+    "test": "NODE_OPTIONS=--localstorage-file=/tmp/node-localstorage.json react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

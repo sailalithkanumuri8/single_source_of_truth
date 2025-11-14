@@ -1,4 +1,4 @@
-# Escalation Hub
+# Compass AI
 
 A React app to view and analyze internal support escalations.
 

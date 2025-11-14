@@ -106,6 +106,7 @@ function App() {
         searchTerm={searchTerm}
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}
+        escalations={escalations}
       />
       
       <div className="app-layout">

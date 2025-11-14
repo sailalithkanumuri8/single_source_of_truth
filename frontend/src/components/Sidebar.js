@@ -132,13 +132,14 @@ const Sidebar = ({
             >
               <span className="filter-label">All Categories</span>
             </button>
-            {['Infrastructure', 'Identity & Access', 'Data & Storage', 'Networking', 'Containers'].map(category => (
+            {Object.keys(escalationStats?.byCategory || {}).sort().map(category => (
               <button
                 key={category}
                 className={`filter-item ${filters.category === category ? 'active' : ''}`}
                 onClick={() => onFilterChange({ ...filters, category })}
               >
                 <span className="filter-label">{category}</span>
+                <span className="filter-count">{escalationStats?.byCategory[category] || 0}</span>
               </button>
             ))}
           </div>

@@ -1,5 +1,3 @@
-// Application constants and configuration
-
 export const CATEGORIES = [
   'Infrastructure',
   'Identity & Access',

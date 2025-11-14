@@ -1,10 +1,5 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-/**
- * Fetch all escalations with optional filters
- * @param {Object} filters - Filter options (status, priority, category, search)
- * @returns {Promise<Array>} Array of escalations
- */
 export const fetchEscalations = async (filters = {}) => {
   const params = new URLSearchParams();
   
@@ -23,11 +18,6 @@ export const fetchEscalations = async (filters = {}) => {
   return await response.json();
 };
 
-/**
- * Fetch a single escalation by ID
- * @param {string} id - Escalation ID
- * @returns {Promise<Object>} Escalation object
- */
 export const fetchEscalationById = async (id) => {
   const url = `${API_BASE_URL}/escalations/${id}`;
   const response = await fetch(url);
@@ -41,10 +31,6 @@ export const fetchEscalationById = async (id) => {
   return await response.json();
 };
 
-/**
- * Fetch escalation statistics
- * @returns {Promise<Object>} Statistics object
- */
 export const fetchEscalationStats = async () => {
   const url = `${API_BASE_URL}/escalations/stats`;
   const response = await fetch(url);

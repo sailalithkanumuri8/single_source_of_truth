@@ -1,122 +1,106 @@
-var express = require('express');
-var router = express.Router();
-var escalations = require('../data/escalations');
+const express = require('express');
+const router = express.Router();
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
+const natural = require('natural');
 
-const natural = require("natural");
+const escalations = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../data/escalations.json'), 'utf8')
+);
+console.log(`✓ Loaded ${escalations.length} escalations`);
+
+const SIMILARITY_THRESHOLD = 0.15;
+const MAX_SIMILAR_RESULTS = 2;
+
+const buildDocument = (e) => 
+  `${e.title || ''} ${e.description || ''} ${e.category || ''} ${e.subcategory || ''} ${(e.tags || []).join(' ')}`;
+
+const calculateCosineSimilarity = (tfidf, idx1, idx2) => {
+  const getTerms = (idx) => {
+    const terms = {};
+    tfidf.listTerms(idx).forEach(item => terms[item.term] = item.tfidf);
+    return terms;
+  };
+
+  const terms1 = getTerms(idx1);
+  const terms2 = getTerms(idx2);
+  const allTerms = new Set([...Object.keys(terms1), ...Object.keys(terms2)]);
+
+  let dotProduct = 0, magnitude1 = 0, magnitude2 = 0;
+
+  allTerms.forEach(term => {
+    const val1 = terms1[term] || 0;
+    const val2 = terms2[term] || 0;
+    dotProduct += val1 * val2;
+    magnitude1 += val1 * val1;
+    magnitude2 += val2 * val2;
+  });
+
+  magnitude1 = Math.sqrt(magnitude1);
+  magnitude2 = Math.sqrt(magnitude2);
+
+  return (magnitude1 === 0 || magnitude2 === 0) ? 0 : dotProduct / (magnitude1 * magnitude2);
+};
 
 router.get('/:id/similar', (req, res) => {
-  const id = req.params.id;
-  const target = escalations.find(e => e.id === id);
-
+  const target = escalations.find(e => e.id === req.params.id);
   if (!target) {
     return res.status(404).json({ error: 'Escalation not found' });
   }
 
-  const TfIdf = natural.TfIdf;
-  const tfidf = new TfIdf();
+  const tfidf = new natural.TfIdf();
+  escalations.forEach(e => tfidf.addDocument(buildDocument(e)));
+  const targetIndex = escalations.findIndex(e => e.id === req.params.id);
 
-  const buildDoc = (e) =>
-    `${e.title} ${e.description} ${e.category} ${e.subcategory} ${e.tags.join(" ")}`;
+  const similarities = escalations
+    .map((e, idx) => ({
+      escalation: e,
+      score: idx === targetIndex ? 0 : calculateCosineSimilarity(tfidf, targetIndex, idx)
+    }))
+    .filter(s => s.score >= SIMILARITY_THRESHOLD)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_SIMILAR_RESULTS)
+    .map(s => ({ ...s, score: Number(s.score.toFixed(3)) }));
 
-  escalations.forEach(e => tfidf.addDocument(buildDoc(e)));
-
-  const targetIndex = escalations.findIndex(e => e.id === id);
-
-  const calculateCosineSimilarity = (idx1, idx2) => {
-    const terms1 = {};
-    const terms2 = {};
-
-    tfidf.listTerms(idx1).forEach(item => {
-      terms1[item.term] = item.tfidf;
-    });
-
-    tfidf.listTerms(idx2).forEach(item => {
-      terms2[item.term] = item.tfidf;
-    });
-
-    let dotProduct = 0;
-    let magnitude1 = 0;
-    let magnitude2 = 0;
-
-    const allTerms = new Set([...Object.keys(terms1), ...Object.keys(terms2)]);
-
-    allTerms.forEach(term => {
-      const val1 = terms1[term] || 0;
-      const val2 = terms2[term] || 0;
-      dotProduct += val1 * val2;
-      magnitude1 += val1 * val1;
-      magnitude2 += val2 * val2;
-    });
-
-    magnitude1 = Math.sqrt(magnitude1);
-    magnitude2 = Math.sqrt(magnitude2);
-
-    if (magnitude1 === 0 || magnitude2 === 0) return 0;
-
-    return dotProduct / (magnitude1 * magnitude2);
-  };
-
-  const SIMILARITY_THRESHOLD = 0.15; 
-
-  let similarities = [];
-
-  escalations.forEach((e, idx) => {
-    if (idx === targetIndex) return;
-
-    const similarity = calculateCosineSimilarity(targetIndex, idx);
-
-    if (similarity >= SIMILARITY_THRESHOLD) {
-      similarities.push({
-        escalation: e,
-        score: Number(similarity.toFixed(3))
-      });
-    }
-  });
-  similarities.sort((a, b) => b.score - a.score);
-
-  res.json(similarities.slice(0, 2));
+  res.json(similarities);
 });
 
-router.get('/', function(req, res, next) {
-  let filtered = [...escalations];
+const matchesCategory = (escalation, filter) => {
+  const escCat = (escalation.category || '').toLowerCase();
+  const filterCat = filter.toLowerCase();
+  return escCat === filterCat || escCat.includes(filterCat) || filterCat.includes(escCat);
+};
 
-  if (req.query.status && req.query.status !== 'all') {
-    filtered = filtered.filter(e => e.status === req.query.status);
-  }
+const matchesSearch = (escalation, search) => {
+  const searchLower = search.toLowerCase();
+  const searchableFields = [
+    escalation.title,
+    escalation.description,
+    escalation.id,
+    escalation.customer,
+    ...(escalation.tags || [])
+  ];
+  return searchableFields.some(field => 
+    field && field.toLowerCase().includes(searchLower)
+  );
+};
 
-  if (req.query.priority && req.query.priority !== 'all') {
-    filtered = filtered.filter(e => e.priority === req.query.priority);
-  }
-
-  if (req.query.category && req.query.category !== 'all') {
-    // Normalize category for comparison (case-insensitive)
-    const filterValue = req.query.category.toLowerCase();
-    
-    filtered = filtered.filter(e => {
-      const escalationCategory = (e.category || '').toLowerCase();
-      return escalationCategory === filterValue || 
-             escalationCategory.includes(filterValue) ||
-             filterValue.includes(escalationCategory);
-    });
-  }
-
-  if (req.query.search) {
-    const searchLower = req.query.search.toLowerCase();
-    filtered = filtered.filter(e => 
-      e.title.toLowerCase().includes(searchLower) ||
-      e.description.toLowerCase().includes(searchLower) ||
-      e.id.toLowerCase().includes(searchLower) ||
-      e.customer.toLowerCase().includes(searchLower) ||
-      e.tags.some(tag => tag.toLowerCase().includes(searchLower))
-    );
-  }
+router.get('/', (req, res) => {
+  const { status, priority, category, search } = req.query;
+  
+  let filtered = escalations.filter(e => {
+    if (status && status !== 'all' && e.status !== status) return false;
+    if (priority && priority !== 'all' && e.priority !== priority) return false;
+    if (category && category !== 'all' && !matchesCategory(e, category)) return false;
+    if (search && !matchesSearch(e, search)) return false;
+    return true;
+  });
 
   res.json(filtered);
 });
 
-router.get('/stats', function(req, res, next) {
+router.get('/stats', (req, res) => {
   const stats = {
     total: escalations.length,
     critical: 0,
@@ -132,21 +116,22 @@ router.get('/stats', function(req, res, next) {
   };
 
   escalations.forEach(e => {
-    if (e.status === 'critical') stats.critical++;
-    else if (e.status === 'high') stats.high++;
-    else if (e.status === 'medium') stats.medium++;
-    else if (e.status === 'low') stats.low++;
+    const status = e.status;
+    if (status === 'critical') stats.critical++;
+    else if (status === 'high') stats.high++;
+    else if (status === 'medium') stats.medium++;
+    else if (status === 'low') stats.low++;
 
-    stats.bySeverity[e.status] = (stats.bySeverity[e.status] || 0) + 1;
+    stats.bySeverity[status] = (stats.bySeverity[status] || 0) + 1;
     stats.byPriority[e.priority] = (stats.byPriority[e.priority] || 0) + 1;
     stats.byCategory[e.category] = (stats.byCategory[e.category] || 0) + 1;
     stats.byTeam[e.assignedTo] = (stats.byTeam[e.assignedTo] || 0) + 1;
-    stats.avgConfidence += e.routingReasoning.confidence;
-    if (e.context.slaStatus === 'At risk') stats.atRisk++;
+    stats.avgConfidence += e.routingReasoning?.confidence || 0;
+    if (e.context?.slaStatus === 'At risk') stats.atRisk++;
   });
 
   if (escalations.length > 0) {
-    stats.avgConfidence = stats.avgConfidence / escalations.length;
+    stats.avgConfidence /= escalations.length;
   }
 
   res.json(stats);
@@ -155,68 +140,46 @@ router.get('/stats', function(req, res, next) {
 
 
 
-router.get('/:id', function(req, res, next) {
+router.get('/:id', (req, res) => {
   const escalation = escalations.find(e => e.id === req.params.id);
-  
   if (!escalation) {
     return res.status(404).json({ error: 'Escalation not found' });
   }
-  
   res.json(escalation);
 });
 
-// ML Prediction endpoint
-router.post('/predict', function(req, res, next) {
+router.post('/predict', (req, res) => {
   const { text, workload, monitor } = req.body;
   
   if (!text) {
     return res.status(400).json({ error: 'Text is required' });
   }
   
-  // Path to Python ML service
   const pythonScript = path.join(__dirname, '../../data_preprocessing/ml_prediction_service.py');
-  
-  // Prepare arguments
   const args = ['--text', text, '--json'];
   if (workload) args.push('--workload', workload);
   if (monitor) args.push('--monitor', monitor);
   
-  // Spawn Python process
   const pythonProcess = spawn('python3', [pythonScript, ...args]);
-  
   let dataString = '';
   let errorString = '';
   
-  pythonProcess.stdout.on('data', (data) => {
-    dataString += data.toString();
-  });
-  
-  pythonProcess.stderr.on('data', (data) => {
-    errorString += data.toString();
-  });
+  pythonProcess.stdout.on('data', (data) => dataString += data.toString());
+  pythonProcess.stderr.on('data', (data) => errorString += data.toString());
   
   pythonProcess.on('close', (code) => {
     if (code !== 0) {
-      console.error('Python process error:', errorString);
-      return res.status(500).json({ 
-        error: 'Prediction failed',
-        details: errorString 
-      });
+      console.error('Prediction error:', errorString);
+      return res.status(500).json({ error: 'Prediction failed', details: errorString });
     }
     
     try {
-      // Parse the last line as JSON (warnings may be printed to stdout)
       const lines = dataString.trim().split('\n');
-      const jsonLine = lines[lines.length - 1];
-      const result = JSON.parse(jsonLine);
+      const result = JSON.parse(lines[lines.length - 1]);
       res.json(result);
     } catch (error) {
-      console.error('Error parsing prediction result:', error);
-      console.error('Raw output:', dataString);
-      res.status(500).json({ 
-        error: 'Failed to parse prediction result',
-        details: error.message 
-      });
+      console.error('Parse error:', error.message);
+      res.status(500).json({ error: 'Failed to parse prediction', details: error.message });
     }
   });
 });

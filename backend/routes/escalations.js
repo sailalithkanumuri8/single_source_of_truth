@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var escalations = require('../data/escalations');
-
+const { spawn } = require('child_process');
+const path = require('path');
 
 const natural = require("natural");
 
@@ -90,18 +91,15 @@ router.get('/', function(req, res, next) {
   }
 
   if (req.query.category && req.query.category !== 'all') {
-    const categoryMap = {
-      'data & storage': 'Data',          
-      'identity & access': 'Identity',    
-      'infrastructure': 'Infrastructure',
-      'networking': 'Networking',
-      'containers': 'Containers'
-    };
+    // Normalize category for comparison (case-insensitive)
+    const filterValue = req.query.category.toLowerCase();
     
-    const filterValue = req.query.category.toLowerCase();  
-    const actualCategory = categoryMap[filterValue] || req.query.category;
-    
-    filtered = filtered.filter(e => e.category === actualCategory);
+    filtered = filtered.filter(e => {
+      const escalationCategory = (e.category || '').toLowerCase();
+      return escalationCategory === filterValue || 
+             escalationCategory.includes(filterValue) ||
+             filterValue.includes(escalationCategory);
+    });
   }
 
   if (req.query.search) {
@@ -165,6 +163,62 @@ router.get('/:id', function(req, res, next) {
   }
   
   res.json(escalation);
+});
+
+// ML Prediction endpoint
+router.post('/predict', function(req, res, next) {
+  const { text, workload, monitor } = req.body;
+  
+  if (!text) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+  
+  // Path to Python ML service
+  const pythonScript = path.join(__dirname, '../../data_preprocessing/ml_prediction_service.py');
+  
+  // Prepare arguments
+  const args = ['--text', text, '--json'];
+  if (workload) args.push('--workload', workload);
+  if (monitor) args.push('--monitor', monitor);
+  
+  // Spawn Python process
+  const pythonProcess = spawn('python3', [pythonScript, ...args]);
+  
+  let dataString = '';
+  let errorString = '';
+  
+  pythonProcess.stdout.on('data', (data) => {
+    dataString += data.toString();
+  });
+  
+  pythonProcess.stderr.on('data', (data) => {
+    errorString += data.toString();
+  });
+  
+  pythonProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error('Python process error:', errorString);
+      return res.status(500).json({ 
+        error: 'Prediction failed',
+        details: errorString 
+      });
+    }
+    
+    try {
+      // Parse the last line as JSON (warnings may be printed to stdout)
+      const lines = dataString.trim().split('\n');
+      const jsonLine = lines[lines.length - 1];
+      const result = JSON.parse(jsonLine);
+      res.json(result);
+    } catch (error) {
+      console.error('Error parsing prediction result:', error);
+      console.error('Raw output:', dataString);
+      res.status(500).json({ 
+        error: 'Failed to parse prediction result',
+        details: error.message 
+      });
+    }
+  });
 });
 
 module.exports = router;

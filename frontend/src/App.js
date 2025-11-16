@@ -73,11 +73,11 @@ function App() {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
-          escalation.title.toLowerCase().includes(searchLower) ||
-          escalation.description.toLowerCase().includes(searchLower) ||
-          escalation.id.toLowerCase().includes(searchLower) ||
-          escalation.customer.toLowerCase().includes(searchLower) ||
-          escalation.tags.some(tag => tag.toLowerCase().includes(searchLower))
+          (escalation.title?.toLowerCase() || '').includes(searchLower) ||
+          (escalation.description?.toLowerCase() || '').includes(searchLower) ||
+          (escalation.id?.toLowerCase() || '').includes(searchLower) ||
+          (escalation.customer?.toLowerCase() || '').includes(searchLower) ||
+          (escalation.tags || []).some(tag => (tag?.toLowerCase() || '').includes(searchLower))
         );
       }
 

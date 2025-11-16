@@ -138,37 +138,39 @@ const EscalationDetail = ({ escalation, onClose }) => {
               </div>
             </div>
 
-            <div className="confidence-section">
-              <div className="confidence-header">
-                <span className="confidence-label">Routing Confidence</span>
-                <span className="confidence-percentage">
-                  {Math.round(escalation.routingReasoning.confidence * 100)}%
-                </span>
+            {escalation.routingReasoning?.confidence && (
+              <div className="confidence-section">
+                <div className="confidence-header">
+                  <span className="confidence-label">Routing Confidence</span>
+                  <span className="confidence-percentage">
+                    {Math.round(escalation.routingReasoning.confidence * 100)}%
+                  </span>
+                </div>
+                <div className="confidence-bar-large">
+                  <div 
+                    className="confidence-fill-large"
+                    style={{ 
+                      width: `${escalation.routingReasoning.confidence * 100}%`,
+                      background: escalation.routingReasoning.confidence > 0.9 
+                        ? 'linear-gradient(90deg, #10b981, #059669)' 
+                        : escalation.routingReasoning.confidence > 0.8 
+                        ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
+                        : 'linear-gradient(90deg, #ef4444, #dc2626)'
+                    }}
+                  />
+                </div>
               </div>
-              <div className="confidence-bar-large">
-                <div 
-                  className="confidence-fill-large"
-                  style={{ 
-                    width: `${escalation.routingReasoning.confidence * 100}%`,
-                    background: escalation.routingReasoning.confidence > 0.9 
-                      ? 'linear-gradient(90deg, #10b981, #059669)' 
-                      : escalation.routingReasoning.confidence > 0.8 
-                      ? 'linear-gradient(90deg, #f59e0b, #d97706)' 
-                      : 'linear-gradient(90deg, #ef4444, #dc2626)'
-                  }}
-                />
-              </div>
-            </div>
+            )}
 
             <div className="reasoning-content">
               <div className="primary-reason">
                 <h3>Primary Reason</h3>
-                <p>{escalation.routingReasoning.primaryReason}</p>
+                <p>{escalation.routingReasoning?.primaryReason || 'Not specified'}</p>
               </div>
 
               <div className="factors-list">
                 <h3>Contributing Factors</h3>
-                {escalation.routingReasoning.factors && escalation.routingReasoning.factors.length > 0 ? (
+                {escalation.routingReasoning?.factors && escalation.routingReasoning.factors.length > 0 ? (
                   <ul>
                     {escalation.routingReasoning.factors.map((factor, index) => (
                       <li key={index}>
@@ -187,7 +189,7 @@ const EscalationDetail = ({ escalation, onClose }) => {
 
               <div className="suggested-actions">
                 <h3>Suggested Actions</h3>
-                {escalation.routingReasoning.suggestedActions && escalation.routingReasoning.suggestedActions.length > 0 ? (
+                {escalation.routingReasoning?.suggestedActions && escalation.routingReasoning.suggestedActions.length > 0 ? (
                   <div className="actions-grid">
                     {escalation.routingReasoning.suggestedActions.map((action, index) => (
                       <div key={index} className="action-item">

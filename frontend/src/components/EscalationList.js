@@ -123,23 +123,25 @@ const EscalationList = ({ escalations, onSelectEscalation }) => {
                 </div>
               </div>
 
-              <div className="confidence-bar">
-                <div className="confidence-label">
-                  <span>AI Confidence</span>
-                  <span className="confidence-value">
-                    {Math.round(escalation.routingReasoning.confidence * 100)}%
-                  </span>
+              {escalation.routingReasoning?.confidence && (
+                <div className="confidence-bar">
+                  <div className="confidence-label">
+                    <span>AI Confidence</span>
+                    <span className="confidence-value">
+                      {Math.round(escalation.routingReasoning.confidence * 100)}%
+                    </span>
+                  </div>
+                  <div className="confidence-track">
+                    <div 
+                      className="confidence-fill"
+                      style={{ 
+                        width: `${escalation.routingReasoning.confidence * 100}%`,
+                        backgroundColor: getConfidenceColor(escalation.routingReasoning.confidence)
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="confidence-track">
-                  <div 
-                    className="confidence-fill"
-                    style={{ 
-                      width: `${escalation.routingReasoning.confidence * 100}%`,
-                      backgroundColor: getConfidenceColor(escalation.routingReasoning.confidence)
-                    }}
-                  />
-                </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
@@ -204,7 +206,7 @@ const EscalationList = ({ escalations, onSelectEscalation }) => {
                   <td className="date-cell">{formatRelativeDate(escalation.createdAt)}</td>
                   <td>
                     <div className="table-confidence">
-                      <span>{Math.round(escalation.routingReasoning.confidence * 100)}%</span>
+                      <span>{escalation.routingReasoning?.confidence ? Math.round(escalation.routingReasoning.confidence * 100) : 'N/A'}%</span>
                     </div>
                   </td>
                 </tr>

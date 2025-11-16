@@ -68,11 +68,21 @@ cd backend
 npm start
 ```
 
+## Data Pipeline
+
+The production dataset comes from the scripts in `data_preprocessing/`:
+
+1. Run `csv_to_json.py` to convert `cleaned_incidents.csv` into `incidents.json` (raw structured data).
+2. Run `enrich_incidents.py` to add routing metadata, confidence scores, context, and timelines. This writes `incidents_enriched.json`.
+3. The backend automatically loads `data_preprocessing/incidents_enriched.json` (or any file pointed to by `ESCALATIONS_DATA_PATH`) at startup, so the React app always works with the latest enriched data. A fallback copy in `backend/data/escalations.json` is only used if the pipeline output is missing.
+
+Both scripts require Python 3.9+ plus the packages listed in the notebooks (scikit-learn, numpy, etc.). Re-run them whenever the CSV changes or you retrain the ML model (`model.pkl` / `label_encoder.pkl`).
+
 ## Development
 
 - Frontend: React app with components in `frontend/src/components/`
 - Backend: Express.js API in `backend/`
-- Mock data: Currently in `frontend/src/data/mockEscalations.js` (can be replaced with API calls)
+- Data: Generated via the pipeline above; no mock data is used in the UI.
 
 ## Build
 
@@ -90,7 +100,7 @@ npm run test:frontend
 
 ## Notes
 
-- The frontend currently uses mock data but can be configured to call the backend API
-- Update API endpoints in frontend when connecting to backend
-- CORS may need to be configured in the backend to allow frontend requests
+- Set `REACT_APP_API_URL` if your backend runs on a non-default host/port.
+- Override the backend dataset path with `ESCALATIONS_DATA_PATH` if you want to point at a different JSON file.
+- CORS is enabled in the backend to allow the React frontend to fetch data.
 

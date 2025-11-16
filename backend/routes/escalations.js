@@ -5,10 +5,48 @@ const path = require('path');
 const fs = require('fs');
 const natural = require('natural');
 
-const escalations = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../data/escalations.json'), 'utf8')
+const DEFAULT_PIPELINE_PATH = path.join(
+  __dirname,
+  '../../data_preprocessing/incidents_enriched.json'
 );
-console.log(`✓ Loaded ${escalations.length} escalations`);
+const LEGACY_DATA_PATH = path.join(__dirname, '../data/escalations.json');
+
+const resolveDataPaths = () => {
+  const paths = [];
+  if (process.env.ESCALATIONS_DATA_PATH) {
+    paths.push(path.resolve(process.env.ESCALATIONS_DATA_PATH));
+  }
+  paths.push(DEFAULT_PIPELINE_PATH, LEGACY_DATA_PATH);
+  return paths;
+};
+
+const loadEscalations = () => {
+  const candidates = resolveDataPaths();
+
+  for (const candidate of candidates) {
+    try {
+      if (!fs.existsSync(candidate)) continue;
+      const data = JSON.parse(fs.readFileSync(candidate, 'utf8'));
+      console.log(
+        `✓ Loaded ${data.length} escalations from ${path.relative(
+          process.cwd(),
+          candidate
+        )}`
+      );
+      return data;
+    } catch (error) {
+      console.warn(
+        `⚠️  Failed to load escalations from ${candidate}: ${error.message}`
+      );
+    }
+  }
+
+  throw new Error(
+    'No escalation dataset found. Run the data_preprocessing pipeline first.'
+  );
+};
+
+const escalations = loadEscalations();
 
 const SIMILARITY_THRESHOLD = 0.15;
 const MAX_SIMILAR_RESULTS = 2;

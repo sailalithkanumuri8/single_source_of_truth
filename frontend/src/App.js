@@ -147,6 +147,8 @@ function App() {
             <FeedbackView 
               escalations={escalations}
               onUpdateEscalation={updateEscalation}
+              searchTerm={searchTerm}
+              filters={filters}
             />
           )}
         </main>

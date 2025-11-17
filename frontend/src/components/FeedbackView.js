@@ -3,14 +3,11 @@ import '../css/EscalationList.css';
 import FeedbackPanel from './FeedbackPanel';
 import { getStatusColor, getPriorityColor, formatRelativeDate } from '../utils/helpers';
 
-const FeedbackView = ({ escalations, onUpdateEscalation }) => {
+const FeedbackView = ({ escalations, onUpdateEscalation, searchTerm, filters }) => {
   const [selectedId, setSelectedId] = useState(null);
   const [feedbackByEscalation, setFeedbackByEscalation] = useState({});
-  const [filters, setFilters] = useState({
-    status: 'all',
-    priority: 'all',
-    category: 'all'
-  });
+  const [viewMode, setViewMode] = useState('cards');
+  const [approvedFilter, setApprovedFilter] = useState('all'); // 'all', 'approved', 'unapproved', 'overridden'
 
   // Update selectedId when escalations load or change
   useEffect(() => {
@@ -19,10 +16,11 @@ const FeedbackView = ({ escalations, onUpdateEscalation }) => {
     }
   }, [escalations, selectedId]);
 
-  // Filter escalations
+  // Filter escalations based on sidebar filters, search, and approved status
   const filteredEscalations = useMemo(() => {
     if (!escalations) return [];
     return escalations.filter(escalation => {
+      // Apply sidebar filters (status, priority, category)
       if (filters.status !== 'all' && escalation.status !== filters.status) {
         return false;
       }
@@ -32,32 +30,63 @@ const FeedbackView = ({ escalations, onUpdateEscalation }) => {
       if (filters.category !== 'all' && escalation.category !== filters.category) {
         return false;
       }
+
+      // Apply search filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        if (
+          !escalation.title.toLowerCase().includes(searchLower) &&
+          !escalation.description.toLowerCase().includes(searchLower) &&
+          !escalation.id.toLowerCase().includes(searchLower) &&
+          !escalation.customer.toLowerCase().includes(searchLower) &&
+          !(escalation.tags && escalation.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+        ) {
+          return false;
+        }
+      }
+
+      // Apply approved/unapproved filter
+      const fb = feedbackByEscalation[escalation.id];
+      if (approvedFilter === 'approved' && (!fb || fb.decision !== 'approve')) {
+        return false;
+      }
+      if (approvedFilter === 'unapproved' && fb) {
+        return false;
+      }
+      if (approvedFilter === 'overridden' && (!fb || fb.decision !== 'override')) {
+        return false;
+      }
+
       return true;
     });
-  }, [escalations, filters]);
+  }, [escalations, filters, searchTerm, approvedFilter, feedbackByEscalation]);
 
   const selected = useMemo(() => 
     selectedId ? escalations.find(e => e.id === selectedId) || null : null, 
     [selectedId, escalations]
   );
 
-  // Calculate stats for filters
-  const feedbackStats = useMemo(() => {
+  // Calculate stats for approved filter
+  const approvedStats = useMemo(() => {
     const stats = {
-      total: escalations?.length || 0,
-      bySeverity: {},
-      byPriority: {},
-      byCategory: {}
+      all: escalations?.length || 0,
+      approved: 0,
+      unapproved: 0,
+      overridden: 0
     };
 
     escalations?.forEach(e => {
-      stats.bySeverity[e.status] = (stats.bySeverity[e.status] || 0) + 1;
-      stats.byPriority[e.priority] = (stats.byPriority[e.priority] || 0) + 1;
-      stats.byCategory[e.category] = (stats.byCategory[e.category] || 0) + 1;
+      const fb = feedbackByEscalation[e.id];
+      if (fb) {
+        if (fb.decision === 'approve') stats.approved++;
+        if (fb.decision === 'override') stats.overridden++;
+      } else {
+        stats.unapproved++;
+      }
     });
 
     return stats;
-  }, [escalations]);
+  }, [escalations, feedbackByEscalation]);
 
   function toPanelProps(escalation) {
     return {
@@ -90,23 +119,22 @@ const FeedbackView = ({ escalations, onUpdateEscalation }) => {
     );
   }
 
-  // Show card view when no escalation is selected
+  // Show card/list view when no escalation is selected
   if (!selectedId) {
     return (
       <div style={{ padding: '2rem' }}>
-        {/* Filters Section */}
-        <div style={{ 
-          marginBottom: '2rem',
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          alignItems: 'center'
-        }}>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <strong style={{ color: 'var(--text-primary)' }}>Status:</strong>
+        {/* Header with view controls and approved filter */}
+        <div className="list-header">
+          <div className="list-info">
+            <h2>Feedback</h2>
+            <span className="result-count">{filteredEscalations.length} result{filteredEscalations.length !== 1 ? 's' : ''}</span>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {/* Approved Status Filter */}
             <select
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              value={approvedFilter}
+              onChange={(e) => setApprovedFilter(e.target.value)}
               style={{
                 padding: '6px 12px',
                 borderRadius: 8,
@@ -117,148 +145,216 @@ const FeedbackView = ({ escalations, onUpdateEscalation }) => {
                 cursor: 'pointer'
               }}
             >
-              <option value="all">All Statuses ({feedbackStats.total})</option>
-              <option value="critical">Critical ({feedbackStats.bySeverity.critical || 0})</option>
-              <option value="high">High ({feedbackStats.bySeverity.high || 0})</option>
-              <option value="medium">Medium ({feedbackStats.bySeverity.medium || 0})</option>
-              <option value="low">Low ({feedbackStats.bySeverity.low || 0})</option>
+              <option value="all">All ({approvedStats.all})</option>
+              <option value="approved">Approved ({approvedStats.approved})</option>
+              <option value="unapproved">Unapproved ({approvedStats.unapproved})</option>
+              <option value="overridden">Overridden ({approvedStats.overridden})</option>
             </select>
-          </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <strong style={{ color: 'var(--text-primary)' }}>Priority:</strong>
-            <select
-              value={filters.priority}
-              onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="all">All Priorities ({feedbackStats.total})</option>
-              <option value="P0">P0 - Critical ({feedbackStats.byPriority.P0 || 0})</option>
-              <option value="P1">P1 - High ({feedbackStats.byPriority.P1 || 0})</option>
-              <option value="P2">P2 - Medium ({feedbackStats.byPriority.P2 || 0})</option>
-              <option value="P3">P3 - Low ({feedbackStats.byPriority.P3 || 0})</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <strong style={{ color: 'var(--text-primary)' }}>Category:</strong>
-            <select
-              value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border-color)',
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="all">All Categories ({feedbackStats.total})</option>
-              {Object.keys(feedbackStats.byCategory).sort().map(category => (
-                <option key={category} value={category}>
-                  {category} ({feedbackStats.byCategory[category] || 0})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginLeft: 'auto', color: 'var(--text-secondary)', fontSize: '14px' }}>
-            {filteredEscalations.length} result{filteredEscalations.length !== 1 ? 's' : ''}
+            {/* View Mode Toggle */}
+            <div className="view-controls">
+              <button
+                className={`view-button ${viewMode === 'cards' ? 'active' : ''}`}
+                onClick={() => setViewMode('cards')}
+                title="Card view"
+              >
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
+                  <rect x="14" y="3" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" stroke="currentColor" strokeWidth="2" rx="1"/>
+                </svg>
+              </button>
+              <button
+                className={`view-button ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                title="Table view"
+              >
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Escalation Cards */}
-        <div className="cards-grid">
-          {filteredEscalations.map((e) => {
-            const fb = feedbackByEscalation[e.id];
-            return (
-              <div
-                key={e.id}
-                className="escalation-card"
-                onClick={() => setSelectedId(e.id)}
-              >
-                <div className="card-header">
-                  <div className="card-meta">
-                    <span
-                      className="priority-badge"
-                      style={{
-                        backgroundColor: `${getPriorityColor(e.priority)}15`,
-                        color: getPriorityColor(e.priority)
-                      }}
-                    >
-                      {e.priority}
-                    </span>
-                    <span
-                      className="status-badge"
-                      style={{
-                        backgroundColor: `${getStatusColor(e.status)}15`,
-                        color: getStatusColor(e.status)
-                      }}
-                    >
+        {/* Card View */}
+        {viewMode === 'cards' ? (
+          <div className="cards-grid">
+            {filteredEscalations.map((e) => {
+              const fb = feedbackByEscalation[e.id];
+              return (
+                <div
+                  key={e.id}
+                  className="escalation-card"
+                  onClick={() => setSelectedId(e.id)}
+                >
+                  <div className="card-header">
+                    <div className="card-meta">
                       <span
-                        className="status-dot"
-                        style={{ backgroundColor: getStatusColor(e.status) }}
-                      />
-                      {e.status}
-                    </span>
-                    {fb && (
+                        className="priority-badge"
+                        style={{
+                          backgroundColor: `${getPriorityColor(e.priority)}15`,
+                          color: getPriorityColor(e.priority)
+                        }}
+                      >
+                        {e.priority}
+                      </span>
                       <span
                         className="status-badge"
                         style={{
-                          backgroundColor: fb.decision === 'approve' ? '#10b98115' : '#2563eb15',
-                          color: fb.decision === 'approve' ? '#10b981' : '#2563eb'
+                          backgroundColor: `${getStatusColor(e.status)}15`,
+                          color: getStatusColor(e.status)
                         }}
                       >
-                        {fb.decision === 'approve' ? '✓ Approved' : '↷ Overridden'}
+                        <span
+                          className="status-dot"
+                          style={{ backgroundColor: getStatusColor(e.status) }}
+                        />
+                        {e.status}
                       </span>
-                    )}
+                      {fb && (
+                        <span
+                          className="status-badge"
+                          style={{
+                            backgroundColor: fb.decision === 'approve' ? '#10b98115' : '#2563eb15',
+                            color: fb.decision === 'approve' ? '#10b981' : '#2563eb'
+                          }}
+                        >
+                          {fb.decision === 'approve' ? '✓ Approved' : '↷ Overridden'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="escalation-id">{e.id}</span>
                   </div>
-                  <span className="escalation-id">{e.id}</span>
+
+                  <h3 className="card-title">{e.title}</h3>
+                  <p className="card-description">{e.description}</p>
+
+                  <div className="card-footer">
+                    <div className="assigned-team">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <span>{e.assignedTo}</span>
+                    </div>
+                    <div className="category-tag">
+                      {e.category}
+                    </div>
+                  </div>
+
+                  {fb && fb.decision === 'override' && (
+                    <div style={{ 
+                      marginTop: '0.75rem', 
+                      paddingTop: '0.75rem', 
+                      borderTop: '1px solid var(--border-color)',
+                      fontSize: '0.875rem',
+                      color: 'var(--text-secondary)'
+                    }}>
+                      Overridden to: <strong style={{ color: '#2563eb' }}>{fb.overriddenTeam}</strong>
+                    </div>
+                  )}
                 </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Table View */
+          <div className="table-container">
+            <table className="escalations-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Team</th>
+                  <th>Category</th>
+                  <th>Approved Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEscalations.map((e) => {
+                  const fb = feedbackByEscalation[e.id];
+                  return (
+                    <tr
+                      key={e.id}
+                      onClick={() => setSelectedId(e.id)}
+                      className="table-row"
+                    >
+                      <td className="id-cell">{e.id}</td>
+                      <td className="title-cell">
+                        <div className="table-title">{e.title}</div>
+                      </td>
+                      <td>
+                        <span
+                          className="status-badge small"
+                          style={{
+                            backgroundColor: `${getStatusColor(e.status)}15`,
+                            color: getStatusColor(e.status)
+                          }}
+                        >
+                          <span
+                            className="status-dot"
+                            style={{ backgroundColor: getStatusColor(e.status) }}
+                          />
+                          {e.status}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className="priority-badge small"
+                          style={{
+                            backgroundColor: `${getPriorityColor(e.priority)}15`,
+                            color: getPriorityColor(e.priority)
+                          }}
+                        >
+                          {e.priority}
+                        </span>
+                      </td>
+                      <td className="team-cell">{e.assignedTo}</td>
+                      <td>
+                        <span className="category-tag small">{e.category}</span>
+                      </td>
+                      <td>
+                        {fb ? (
+                          <span
+                            className="status-badge small"
+                            style={{
+                              backgroundColor: fb.decision === 'approve' ? '#10b98115' : '#2563eb15',
+                              color: fb.decision === 'approve' ? '#10b981' : '#2563eb'
+                            }}
+                          >
+                            {fb.decision === 'approve' ? '✓ Approved' : `↷ ${fb.overriddenTeam}`}
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                            Unapproved
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                <h3 className="card-title">{e.title}</h3>
-                <p className="card-description">{e.description}</p>
-
-                <div className="card-footer">
-                  <div className="assigned-team">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    </svg>
-                    <span>{e.assignedTo}</span>
-                  </div>
-                  <div className="category-tag">
-                    {e.category}
-                  </div>
-                </div>
-
-                {fb && fb.decision === 'override' && (
-                  <div style={{ 
-                    marginTop: '0.75rem', 
-                    paddingTop: '0.75rem', 
-                    borderTop: '1px solid var(--border-color)',
-                    fontSize: '0.875rem',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    Overridden to: <strong style={{ color: '#2563eb' }}>{fb.overriddenTeam}</strong>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {filteredEscalations.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <h3>No escalations found</h3>
+            <p>Try adjusting your filters or search terms</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -279,7 +375,14 @@ const FeedbackView = ({ escalations, onUpdateEscalation }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          fontSize: '14px'
+          fontSize: '14px',
+          transition: 'all 0.2s ease'
+        }}
+        onMouseOver={(e) => {
+          e.target.style.background = 'var(--bg-tertiary)';
+        }}
+        onMouseOut={(e) => {
+          e.target.style.background = 'var(--bg-secondary)';
         }}
       >
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">

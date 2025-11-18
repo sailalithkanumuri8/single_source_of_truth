@@ -40,11 +40,12 @@ npm test
 src/
   components/   # UI components
   css/          # Styles
-  data/         # Mock data
+  hooks/        # Custom hooks
+  services/     # API client
   utils/        # Helpers & constants
   App.js        # App shell
 ```
 
 ## Notes
-- No backend required; uses mock data in `src/data/mockEscalations.js`.
+- The app fetches live data from `REACT_APP_API_URL` (defaults to `http://localhost:3001/api`).
 - Update styles in `src/css/` and shared helpers in `src/utils/`.

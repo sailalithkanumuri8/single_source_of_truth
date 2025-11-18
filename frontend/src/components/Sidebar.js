@@ -1,5 +1,6 @@
 import React from 'react';
 import '../css/Sidebar.css';
+import { PRIORITY_COLORS } from '../utils/helpers';
 
 const Sidebar = ({ 
   selectedView, 
@@ -50,11 +51,22 @@ const Sidebar = ({
     { id: 'low', label: 'Low', count: escalationStats?.bySeverity?.low || 0, color: '#10b981' }
   ];
 
+  const PRIORITY_LABELS = {
+    P0: 'P0 - Critical',
+    P1: 'P1 - High',
+    P2: 'P2 - Medium',
+    P3: 'P3 - Low',
+    P4: 'P4 - Informational'
+  };
+
   const priorityFilters = [
     { id: 'all', label: 'All Priorities', count: escalationStats?.total || 0 },
-    { id: 'P0', label: 'P0 - Critical', count: escalationStats?.byPriority?.P0 || 0, color: '#dc2626' },
-    { id: 'P1', label: 'P1 - High', count: escalationStats?.byPriority?.P1 || 0, color: '#ea580c' },
-    { id: 'P2', label: 'P2 - Medium', count: escalationStats?.byPriority?.P2 || 0, color: '#f59e0b' }
+    ...Object.keys(PRIORITY_COLORS).map(priority => ({
+      id: priority,
+      label: PRIORITY_LABELS[priority] || priority,
+      count: escalationStats?.byPriority?.[priority] || 0,
+      color: PRIORITY_COLORS[priority]
+    }))
   ];
 
   return (

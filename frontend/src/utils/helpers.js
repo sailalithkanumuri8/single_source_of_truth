@@ -79,9 +79,9 @@ export const calculateStats = (escalations) => {
     stats.byPriority[e.priority] = (stats.byPriority[e.priority] || 0) + 1;
     stats.byCategory[e.category] = (stats.byCategory[e.category] || 0) + 1;
     stats.byTeam[e.assignedTo] = (stats.byTeam[e.assignedTo] || 0) + 1;
-    stats.avgConfidence += e.routingReasoning.confidence;
+    stats.avgConfidence += e.routingReasoning?.confidence || 0;
 
-    if (e.context.slaStatus === 'At risk') stats.atRisk++;
+    if (e.context?.slaStatus === 'At risk') stats.atRisk++;
   });
 
   if (escalations.length > 0) {

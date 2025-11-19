@@ -1,4 +1,4 @@
-# Single Source of Truth - Monorepo
+# Compass AI
 
 A full-stack application for viewing and analyzing internal support escalations.
 
